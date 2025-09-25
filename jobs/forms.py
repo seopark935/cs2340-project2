@@ -5,6 +5,12 @@ class JobForm(forms.ModelForm):
     class Meta:
         model = Job
         fields = [
-            "title", "description", "location", "remote_type",
-            "salary_min", "salary_max", "visa_sponsorship", "skills"
+            "title",
+            "description",
+            "location",
+            "remote_type",
+            "salary_min",
+            "salary_max",
+            "visa_sponsorship",
+            "skills",
         ]

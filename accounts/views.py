@@ -4,6 +4,7 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import login
 from django.urls import reverse
 from django.contrib.auth.views import LoginView
+from django.contrib.auth import logout
 
 from .forms import JobSeekerSignUpForm, RecruiterSignUpForm
 from .models import User
@@ -57,3 +58,10 @@ class RoleLoginView(LoginView):
 
     def get_success_url(self):
         return role_redirect(self.request.user)
+
+# ---------- Logout View ----------
+
+def logout_view(request):
+    """Logs out user via GET and redirects home."""
+    logout(request)
+    return redirect("home.index")  # send them back to home
