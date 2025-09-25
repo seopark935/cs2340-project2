@@ -1,54 +1,59 @@
-from django.shortcuts import render
-from django.contrib.auth import login as auth_login, authenticate, logout as auth_logout
-from .forms import CustomUserCreationForm, CustomErrorList
-from django.shortcuts import redirect
-from django.contrib.auth.decorators import login_required
-from django.contrib.auth.models import User
+# accounts/views.py
 
-@login_required
-def logout(request):
-    auth_logout(request)
-    return redirect('home.index')
+from django.shortcuts import render, redirect
+from django.contrib.auth import login
+from django.urls import reverse
+from django.contrib.auth.views import LoginView
 
-def login(request):
-    template_data = {}
-    template_data['title'] = 'Login'
-    if request.method == 'GET':
-        return render(request, 'accounts/login.html',{'template_data': template_data})
-    elif request.method == 'POST':
-        user = authenticate(
-            request,
-            username = request.POST['username'],
-            password = request.POST['password']
-        )
-        if user is None:
-            template_data['error'] = 'The username or password is incorrect.'
-            return render(request, 'accounts/login.html', {'template_data': template_data})
-        else:
-            auth_login(request, user)
-            return redirect('home.index')
+from .forms import JobSeekerSignUpForm, RecruiterSignUpForm
+from .models import User
 
-def signup(request):
-    template_data = {}
-    template_data['title'] = 'Sign Up'
-    if request.method == 'GET':
-        template_data['form'] = CustomUserCreationForm()
-        return render(request, 'accounts/signup.html',
-            {'template_data': template_data})
-    elif request.method == 'POST':
-        form = CustomUserCreationForm(request.POST, error_class=CustomErrorList)
+
+# ---------- Helpers ----------
+def role_redirect(user):
+    """Redirect users after login/signup based on their role."""
+    if user.role == User.Roles.RECRUITER:
+        return reverse("jobs.create")   # recruiter goes to job posting page (dashboard later)
+    else:
+        return reverse("jobs.list")     # job seeker goes to job listings
+
+
+# ---------- Signup Views ----------
+def signup_choice(request):
+    """Page where user picks Job Seeker vs Recruiter signup."""
+    return render(request, "accounts/signup_choice.html")
+
+
+def jobseeker_signup(request):
+    """Sign up flow for job seekers."""
+    if request.method == "POST":
+        form = JobSeekerSignUpForm(request.POST)
         if form.is_valid():
-            form.save()
-            return redirect('accounts.login')
-        else:
-            template_data['form'] = form
-            return render(request, 'accounts/signup.html',
-                {'template_data': template_data})
-        
-@login_required
-def orders(request):
-    template_data = {}
-    template_data['title'] = 'Orders'
-    template_data['orders'] = request.user.order_set.all()
-    return render(request, 'accounts/orders.html',
-        {'template_data': template_data})
+            user = form.save()
+            login(request, user)  # log them in immediately
+            return redirect(role_redirect(user))
+    else:
+        form = JobSeekerSignUpForm()
+    return render(request, "accounts/signup.html", {"form": form, "role": "Job Seeker"})
+
+
+def recruiter_signup(request):
+    """Sign up flow for recruiters."""
+    if request.method == "POST":
+        form = RecruiterSignUpForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            login(request, user)
+            return redirect(role_redirect(user))
+    else:
+        form = RecruiterSignUpForm()
+    return render(request, "accounts/signup.html", {"form": form, "role": "Recruiter"})
+
+
+# ---------- Login View ----------
+class RoleLoginView(LoginView):
+    """Custom login view that redirects based on role."""
+    template_name = "accounts/login.html"
+
+    def get_success_url(self):
+        return role_redirect(self.request.user)

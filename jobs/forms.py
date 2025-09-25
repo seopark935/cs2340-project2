@@ -1,4 +1,3 @@
-# jobs/forms.py
 from django import forms
 from .models import Job
 
@@ -7,6 +6,5 @@ class JobForm(forms.ModelForm):
         model = Job
         fields = [
             "title", "description", "location", "remote_type",
-            "salary_min", "salary_max", "currency",
-            "visa_sponsorship", "skills",
+            "salary_min", "salary_max", "visa_sponsorship", "skills"
         ]
