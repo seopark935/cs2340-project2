@@ -2,29 +2,32 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.db import models
 
-class JobSeekerProfile(models.Model):
+class JobSeeker(models.Model):
     id = models.AutoField(primary_key=True) # system user ID
     
     # general personal information
     firstName = models.CharField("First Name", max_length=255)
     lastName = models.CharField("Last Name", max_length=255)
     location = models.CharField("Location", max_length=255)
-    profileImage = models.ImageField("Profile Image", upload_to='jobseeker_images/')
+    image = models.ImageField("Profile Image", upload_to='jobSeeker_images/', null=True, blank=True)
 
     # education
     education = models.ForeignKey(
         "Institution",
         on_delete=models.PROTECT,
-        related_name="job_seekers") # one education per user
+        related_name="jobSeeker") # one education per user
     degree = models.CharField(max_length=255)
     startYear = models.IntegerField("Start Year")
-    endYear = models.IntegerField("End Year")
+    endYear = models.IntegerField("End Year", blank=True)
 
     # professional
     headline = models.TextField()
+    experience = models.ManyToManyField(
+        "Experience",
+        related_name="jobSeeker") # one education per user
     skills = models.ManyToManyField(
         "Skill",
-        related_name="job_seekers")
+        related_name="jobSeeker")
 
     def __str__(self):
         return str(self.id) + ' - ' + self.firstName + ' ' + self.lastName
@@ -36,19 +39,29 @@ class Institution(models.Model):
     def __str__(self):
         return str(self.id) + ' - ' + self.name
 
+class Experience(models.Model):
+    id = models.AutoField(primary_key=True) # system ID
+    name = models.CharField("Company", max_length=255) # name of company
+    location = models.CharField(max_length=255) # location worked
+    startDate = models.CharField("Start Date (mm/yyyy)", max_length=7) # start date
+    endDate = models.CharField("End Date (mm/yyyy)", max_length=7, blank=True) # end date
+    description = models.TextField()
+    def __str__(self):
+        return str(self.id) + ' - ' + self.name
+
 class Skill(models.Model):
     id = models.AutoField(primary_key=True) # system ID
     skill = models.CharField(max_length=255)
 
     def job_seekers(self):
-        return JobSeekerProfile.objects.filter(skills=self)
+        return JobSeeker.objects.filter(skills=self)
     def __str__(self):
          return self.skill
 
 class Link(models.Model):
     id = models.AutoField(primary_key=True) # system ID
     url = models.URLField() # link to be displayed
-    jobSeeker = models.ForeignKey("JobSeekerProfile", on_delete=models.CASCADE) # one user per link
+    jobSeeker = models.ForeignKey("JobSeeker", on_delete=models.CASCADE) # one user per link
     def __str__(self):
         return str(self.id) + ' - ' + self.url
 

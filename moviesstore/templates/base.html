@@ -11,7 +11,7 @@
     <link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
   </head>
-  <body>
+  <body class="d-flex flex-column min-vh-100">
     <!-- Header -->
     <nav class="p-3 navbar navbar-dark bg-dark navbar-expand-lg">
         <div class="container">
@@ -30,27 +30,19 @@
             <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
                 <div class="navbar-nav ms-auto navbar-ml">
                     <a class="nav-link" href="{% url 'home.about' %}">About</a>
-                    <a class="nav-link" href="{% url 'jobSeekers.index' %}">jobSeekers</a>
-                    <a class="nav-link" href="{% url 'cart.index' %}">Cart</a>
+                    <a class="nav-link" href="{% url 'jobSeekers.index' %}">Job Seekers</a>
                     <div class="vr bg-white mx-2 d-none d-lg-block"></div>
-                    {% if user.is_authenticated %}
-                    <a class="nav-link" href="{% url 'accounts.orders' %}">Orders</a>
-                    <a class="nav-link" href="{% url 'accounts.logout' %}">Logout ({{user.username }})</a>
-                    {% else %}
-                    <a class="nav-link" href="{% url 'accounts.login' %}">Login</a>
-                    <a class="nav-link" href="{% url 'accounts.signup' %}">Sign Up</a>
-                    {% endif %}
                 </div>
             </div>
         </div>
     </nav>
     <!-- Header -->
-    <div>
+    <div class="flex-grow-1">
       {% block content %}
       {% endblock content %}
     </div>
     <!-- Footer -->
-    <section class="p-3 ms-footer d-none d-md-block">
+    <section class="p-3 ms-footer d-none d-md-block mt-auto py-3 border-top">
         <div class="container">
             <div class="row mt-3 text-white">
                 <div class="col-md-6 col-lg-6 col-xl-6

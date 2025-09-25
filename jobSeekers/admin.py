@@ -1,30 +1,27 @@
 from django.contrib import admin
-from .models import JobSeekerProfile, Institution, Skill, Link
+from .models import JobSeeker, Institution, Experience, Skill, Link
 
-class JobSeekerProfileAdmin(admin.ModelAdmin):
+class JobSeekerAdmin(admin.ModelAdmin):
     search_fields = ['firstName']
     autocomplete_fields = ('education',)
+    autocomplete_fields = ('experience',)
     filter_horizontal = ("skills",)  # editable list of skills
 
 class InstitutionAdmin(admin.ModelAdmin):
     search_fields = ("name", "location")   # needed for autocomplete
 
+class ExperienceAdmin(admin.ModelAdmin):
+    search_fields = ("name", "location")   # needed for autocomplete
+
 class SkillAdmin(admin.ModelAdmin):
     search_fields = ['name']
-
-    # def profiles_count(self, obj):
-    #     return obj.job_seekers.count()
-
-    # def job_seekers_list(self, obj):
-    #     names = obj.job_seekers.values_list("firstName", "lastName")
-    #     return ", ".join(f"{fn} {ln}" for fn, ln in names)
 
 class LinkAdmin(admin.ModelAdmin):
     search_fields = ['name']
 
-
-admin.site.register(JobSeekerProfile, JobSeekerProfileAdmin)
+admin.site.register(JobSeeker, JobSeekerAdmin)
 admin.site.register(Institution, InstitutionAdmin)
+admin.site.register(Experience, ExperienceAdmin)
 admin.site.register(Skill, SkillAdmin)
 admin.site.register(Link, LinkAdmin)
 

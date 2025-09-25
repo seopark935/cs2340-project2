@@ -1,30 +1,30 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from .models import JobSeekerProfile, Institution, Skill, Link
+from .models import JobSeeker, Experience, Skill, Link
 from django.db.models import F
 from django.contrib.auth.decorators import login_required
 
 def index(request):
     search_term = request.GET.get('search')
     if search_term:
-        jobSeekers = JobSeekerProfile.objects.filter(name__icontains=search_term)
+        jobSeekers = JobSeeker.objects.filter(name__icontains=search_term)
     else:
-        jobSeekers = JobSeekerProfile.objects.filter()
+        jobSeekers = JobSeeker.objects.filter()
         
     template_data = {}
     template_data['title'] = 'Job Seeker'
-    template_data['profiles'] = jobSeekers
+    template_data['jobSeekers'] = jobSeekers
 
     return render(request, 'jobSeekers/index.html',
                   {'template_data': template_data})
 
 def show(request, id):
-    jobSeeker = JobSeekerProfile.get(id=id)
-    skills = Skill.objects.filter(jobSeeker=jobSeeker)
-    links = Link.objects.filter(jobSeeker=jobSeeker)
+    jobSeeker = JobSeeker.objects.get(id=id)
     template_data = {}
-    template_data['name'] = jobSeeker.firstName
-    template_data['skills'] = skills
-    template_data['links'] = links
+    template_data['jobSeeker'] = jobSeeker
+    template_data['name'] = jobSeeker.firstName + ' ' + jobSeeker.lastName
+    template_data['experiences'] = Experience.objects.filter(jobSeeker=jobSeeker)
+    template_data['skills'] = Skill.objects.filter(jobSeeker=jobSeeker)
+    template_data['links'] = Link.objects.filter(jobSeeker=jobSeeker)
     return render(request, 'jobSeekers/show.html',
                   {'template_data': template_data})
 
