@@ -27,5 +27,11 @@ class Job(models.Model):
     )
     created_at = models.DateTimeField(auto_now_add=True)
 
+class Application(models.Model):
+    job = models.ForeignKey("jobs.Job", on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    message = models.TextField()
+    applied_at = models.DateTimeField(auto_now_add=True)
+
     def __str__(self):
         return self.title
