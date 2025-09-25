@@ -2,10 +2,9 @@ from django.contrib import admin
 from .models import JobSeeker, Institution, Experience, Skill, Link
 
 class JobSeekerAdmin(admin.ModelAdmin):
-    search_fields = ['firstName']
+    search_fields = ['firstName', 'lastName', 'headline']
     autocomplete_fields = ('education',)
-    autocomplete_fields = ('experience',)
-    filter_horizontal = ("skills",)  # editable list of skills
+    filter_horizontal = ("skills", "experience")  # many-to-many pickers
 
 class InstitutionAdmin(admin.ModelAdmin):
     search_fields = ("name", "location")   # needed for autocomplete

@@ -1,14 +1,19 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import JobSeeker, Experience, Skill, Link
-from django.db.models import F
+from django.db.models import Q
+from accounts.decorators import recruiter_required
 from django.contrib.auth.decorators import login_required
 
+@login_required
+@recruiter_required
 def index(request):
     search_term = request.GET.get('search')
     if search_term:
-        jobSeekers = JobSeeker.objects.filter(name__icontains=search_term)
-    else:
-        jobSeekers = JobSeeker.objects.filter()
+        jobSeekers = jobSeekers.filter(
+            Q(firstName__icontains=search_term) |
+            Q(lastName__icontains=search_term) |
+            Q(headline__icontains=search_term)
+        )
         
     template_data = {}
     template_data['title'] = 'Job Seeker'
@@ -17,8 +22,10 @@ def index(request):
     return render(request, 'jobSeekers/index.html',
                   {'template_data': template_data})
 
+@login_required
+@recruiter_required
 def show(request, id):
-    jobSeeker = JobSeeker.objects.get(id=id)
+    jobSeeker = get_object_or_404(JobSeeker, id=id)
     template_data = {}
     template_data['jobSeeker'] = jobSeeker
     template_data['name'] = jobSeeker.firstName + ' ' + jobSeeker.lastName
