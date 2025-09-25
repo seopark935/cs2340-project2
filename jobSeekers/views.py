@@ -1,39 +1,50 @@
-from django.shortcuts import render, redirect, get_object_or_404
-from .models import JobSeeker, Experience, Skill, Link
+# jobSeekers/views.py
+from django.shortcuts import render, get_object_or_404
 from django.db.models import Q
-from accounts.decorators import recruiter_required
 from django.contrib.auth.decorators import login_required
+from accounts.decorators import recruiter_required
+from .models import JobSeeker
 
 @login_required
 @recruiter_required
 def index(request):
-    search_term = request.GET.get('search')
+    """List all job seekers (for recruiters only)."""
+    search_term = request.GET.get("search", "")
+
+    # Start with all job seekers
+    jobSeekers = JobSeeker.objects.all()
+
+    # Apply search if provided
     if search_term:
         jobSeekers = jobSeekers.filter(
             Q(firstName__icontains=search_term) |
             Q(lastName__icontains=search_term) |
             Q(headline__icontains=search_term)
         )
-        
-    template_data = {}
-    template_data['title'] = 'Job Seeker'
-    template_data['jobSeekers'] = jobSeekers
 
-    return render(request, 'jobSeekers/index.html',
-                  {'template_data': template_data})
+    template_data = {
+        "title": "Job Seekers",
+        "jobSeekers": jobSeekers,
+    }
+    return render(request, "jobSeekers/index.html", {"template_data": template_data})
+
 
 @login_required
 @recruiter_required
 def show(request, id):
+    """Show details of a single job seeker (for recruiters only)."""
     jobSeeker = get_object_or_404(JobSeeker, id=id)
-    template_data = {}
-    template_data['jobSeeker'] = jobSeeker
-    template_data['name'] = jobSeeker.firstName + ' ' + jobSeeker.lastName
-    template_data['experiences'] = Experience.objects.filter(jobSeeker=jobSeeker)
-    template_data['skills'] = Skill.objects.filter(jobSeeker=jobSeeker)
-    template_data['links'] = Link.objects.filter(jobSeeker=jobSeeker)
-    return render(request, 'jobSeekers/show.html',
-                  {'template_data': template_data})
+
+    template_data = {
+        "jobSeeker": jobSeeker,
+        "name": jobSeeker.full_name,
+        "experiences": jobSeeker.experience.all(),   # ✅ correct ManyToMany usage
+        "skills": jobSeeker.skills.all(),            # ✅ correct ManyToMany usage
+        "links": jobSeeker.links.all(),              # ✅ via related_name="links"
+    }
+
+    return render(request, "jobSeekers/show.html", {"template_data": template_data})
+
 
     # movie = Movie.objects.get(id=id)
     # reviews = Review.objects.filter(movie=movie)

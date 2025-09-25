@@ -2,57 +2,72 @@
 {% block content %}
 {% load static %}
 <div class="p-3">
-    <div class="container">
-        <div class="col-md-6 mx-auto mb-3">
-            <div class="col-md-6 mx-auto mb-3 text-center">
-                <img src="{{ template_data.jobSeeker.image.url }}" class="rounded img-card-200" />
-            </div>
-            <h2>{{ template_data.name }}</h2>
-            <div class="fw-light">
-                {{ template_data.jobSeeker.education.name  }}
-            </div>
-            <div class="text-body-secondary">
-                {{ template_data.jobSeeker.startYear }} - {{ template_data.jobSeeker.endYear }}
-            </div>
-            <div class="mt-4 mb-5">{{ template_data.jobSeeker.headline  }}</div>
-            <h4>Work Experience</h4>
-            <hr />
-            {% for experience in template_data.experiences %}
-                <div class="col-md-8 col-12 mb-5">
-                    <div class="fw-semibold lh-sm fs-5 text-truncate" style="max-width: 500px;">
-                        {{ experience.name }} | {{ experience.location }}
-                    </div>
-                    <div class="text-body-secondary my-1 lh-sm mb-3">
-                        {% if experience.endDate == "" %}
-                            Since {{ experience.startDate }}
-                        {% else %}
-                            {{ experience.startDate }} - {{ experience.endDate }} 
-                        {% endif %}
-                    </div>
-                    <div class="my-1 lh-sm mb-3">
-                        {{ experience.description }}
-                    </div>
-                </div>
-                <div class="card p-3 border-0 shadow-0">
+  <div class="container">
+    <div class="col-md-6 mx-auto mb-3">
 
-                </div>
-            {% endfor %}
-            <h4>Skills</h4>
-            <hr />
-            {% for skill in template_data.skills %}
-                <div class="col-md-8 col-12 mb-5">
-                    {{ skill.skill }}
-                </div>
-            {% endfor %}
-            <h4>Links</h4>
-            <hr />
-            {% for link in template_data.links %}
-                <div class="col-md-8 col-12 mb-5">
-                    {{ link.url }}
-                </div>
-            {% endfor %}
+      <div class="col-md-6 mx-auto mb-3 text-center">
+        <!-- ✅ Safe image check -->
+        {% if template_data.jobSeeker.image %}
+          <img src="{{ template_data.jobSeeker.image.url }}" class="rounded img-card-200" alt="{{ template_data.name }}">
+        {% else %}
+          <img src="{% static 'img/default_profile.jpg' %}" class="rounded img-card-200" alt="No profile image">
+        {% endif %}
+      </div>
+
+      <h2>{{ template_data.name }}</h2>
+
+      <div class="fw-light">
+        {{ template_data.jobSeeker.education.name }}
+      </div>
+      <div class="text-body-secondary">
+        {{ template_data.jobSeeker.startYear }} - {{ template_data.jobSeeker.endYear }}
+      </div>
+
+      <div class="mt-4 mb-5">{{ template_data.jobSeeker.headline }}</div>
+
+      <h4>Work Experience</h4>
+      <hr />
+      {% for experience in template_data.experiences %}
+        <div class="col-md-8 col-12 mb-5">
+          <div class="fw-semibold lh-sm fs-5 text-truncate" style="max-width: 500px;">
+            {{ experience.name }} | {{ experience.location }}
+          </div>
+          <div class="text-body-secondary my-1 lh-sm mb-3">
+            {% if experience.endDate == "" %}
+              Since {{ experience.startDate }}
+            {% else %}
+              {{ experience.startDate }} - {{ experience.endDate }}
+            {% endif %}
+          </div>
+          <div class="my-1 lh-sm mb-3">
+            {{ experience.description }}
+          </div>
         </div>
-        
+      {% empty %}
+        <p>No experiences listed.</p>
+      {% endfor %}
+
+      <h4>Skills</h4>
+      <hr />
+      {% for skill in template_data.skills %}
+        <div class="col-md-8 col-12 mb-2">
+          <span class="badge bg-secondary">{{ skill.name }}</span>
+        </div>
+      {% empty %}
+        <p>No skills listed.</p>
+      {% endfor %}
+
+      <h4>Links</h4>
+      <hr />
+      {% for link in template_data.links %}
+        <div class="col-md-8 col-12 mb-2">
+          <a href="{{ link.url }}" target="_blank">{{ link.url }}</a>
+        </div>
+      {% empty %}
+        <p>No links provided.</p>
+      {% endfor %}
+
     </div>
+  </div>
 </div>
 {% endblock content %}

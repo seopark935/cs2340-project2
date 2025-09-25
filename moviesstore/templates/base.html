@@ -14,28 +14,49 @@
   <body class="d-flex flex-column min-vh-100">
     <!-- Header -->
     <nav class="p-3 navbar navbar-dark bg-dark navbar-expand-lg">
-        <div class="container">
-            <a class="navbar-brand"
-                href="{% url 'home.index' %}">
-                <img src="{% static 'img/logo.png' %}" alt="logo" height="40" />
-            </a>
-            <button class="navbar-toggler" type="button"
+    <div class="container">
+        <!-- Brand / Logo -->
+        <a class="navbar-brand" href="{% url 'home.index' %}">
+        <img src="{% static 'img/logo.png' %}" alt="logo" height="40" />
+        </a>
+
+        <!-- Mobile toggle -->
+        <button class="navbar-toggler" type="button"
                 data-bs-toggle="collapse"
                 data-bs-target="#navbarNavAltMarkup"
                 aria-controls="navbarNavAltMarkup"
                 aria-expanded="false"
                 aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
-                <div class="navbar-nav ms-auto navbar-ml">
-                    <a class="nav-link" href="{% url 'home.about' %}">About</a>
-                    <a class="nav-link" href="{% url 'jobSeekers.index' %}">Job Seekers</a>
-                    <div class="vr bg-white mx-2 d-none d-lg-block"></div>
-                </div>
-            </div>
+        <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <!-- Links -->
+        <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+        <div class="navbar-nav ms-auto navbar-ml">
+
+            <!-- Always visible -->
+            <a class="nav-link" href="{% url 'jobs.list' %}">Jobs</a>
+
+            <!-- Only recruiters can view job seekers -->
+            {% if user.is_authenticated and user.is_recruiter %}
+            <a class="nav-link" href="{% url 'jobSeekers.index' %}">Job Seekers</a>
+            {% endif %}
+
+            <div class="vr bg-white mx-2 d-none d-lg-block"></div>
+
+            <!-- Auth links -->
+            {% if user.is_authenticated %}
+            <span class="nav-link disabled">Hi, {{ user.username }}</span>
+            <a class="nav-link" href="{% url 'logout' %}">Sign out</a>
+            {% else %}
+            <a class="nav-link" href="{% url 'login' %}">Log in</a>
+            <a class="nav-link" href="{% url 'signup.choice' %}">Sign up</a>
+            {% endif %}
         </div>
+        </div>
+    </div>
     </nav>
+
     <!-- Header -->
     <div class="flex-grow-1">
       {% block content %}
@@ -47,7 +68,7 @@
             <div class="row mt-3 text-white">
                 <div class="col-md-6 col-lg-6 col-xl-6
                     mx-auto mb-4">
-                <b>MOVIES STORE</b>
+                <b>Job Viewer
                 <hr />
                 <p>
                     Welcome to Movies Store, your premier online
