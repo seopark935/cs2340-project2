@@ -38,10 +38,19 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'home',
+    'accounts',
     'jobSeekers',
-    # 'accounts',
+    'jobs',
+    'django_filters',
     # 'cart',
 ]
+
+AUTH_USER_MODEL = "accounts.User"
+
+LOGIN_URL = "login"
+LOGIN_REDIRECT_URL = "jobs.list"   # fallback
+LOGOUT_REDIRECT_URL = "home.about"
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',

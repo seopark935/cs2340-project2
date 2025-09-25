@@ -3,6 +3,8 @@ from . import views
 urlpatterns = [
     path('', views.index, name='jobSeekers.index'),
     path('<int:id>/', views.show, name='jobSeekers.show'),
+    path("me/", views.my_profile, name="jobSeekers.my_profile"), 
+    path("me/edit/", views.edit_profile, name="jobSeekers.edit_profile"),  # ✅ new
     # path('<int:id>/review/create/', views.create_review, name='movies.create_review'),
     # path('<int:id>/review/<int:review_id>/edit/', views.edit_review, name='movies.edit_review'),
     # path('<int:id>/review/<int:review_id>/delete/', views.delete_review, name='movies.delete_review'),

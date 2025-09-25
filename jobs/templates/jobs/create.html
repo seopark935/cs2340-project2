@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container py-4">
+  <h2 class="mb-4">Post a New Job</h2>
+
+  <form method="post">
+    {% csrf_token %}
+    {{ form.non_field_errors }}
+
+    <!-- Title -->
+    <div class="mb-3">
+      <label class="form-label">Job Title</label>
+      {{ form.title }}
+      {{ form.title.errors }}
+    </div>
+
+    <!-- Description -->
+    <div class="mb-3">
+      <label class="form-label">Description</label>
+      {{ form.description }}
+      {{ form.description.errors }}
+    </div>
+
+    <!-- Location -->
+    <div class="mb-3">
+      <label class="form-label">Location</label>
+      {{ form.location }}
+      {{ form.location.errors }}
+    </div>
+
+    <!-- Remote type -->
+    <div class="mb-3">
+      <label class="form-label">Remote Type</label>
+      {{ form.remote_type }}
+      {{ form.remote_type.errors }}
+    </div>
+
+    <!-- Salary range -->
+    <div class="row">
+      <div class="col-md-6 mb-3">
+        <label class="form-label">Minimum Salary</label>
+        {{ form.salary_min }}
+        {{ form.salary_min.errors }}
+      </div>
+      <div class="col-md-6 mb-3">
+        <label class="form-label">Maximum Salary</label>
+        {{ form.salary_max }}
+        {{ form.salary_max.errors }}
+      </div>
+    </div>
+
+    <!-- Visa sponsorship -->
+    <div class="mb-3 form-check">
+      {{ form.visa_sponsorship }}
+      <label class="form-check-label">Visa Sponsorship Available</label>
+      {{ form.visa_sponsorship.errors }}
+    </div>
+
+    <!-- Skills -->
+    <div class="mb-3">
+      <label class="form-label">Required Skills</label>
+      {{ form.skills }}
+      {{ form.skills.errors }}
+    </div>
+
+    <button class="btn btn-dark" type="submit">Create Job</button>
+    <a href="{% url 'jobs.list' %}" class="btn btn-outline-secondary">Cancel</a>
+  </form>
+</div>
+{% endblock %}

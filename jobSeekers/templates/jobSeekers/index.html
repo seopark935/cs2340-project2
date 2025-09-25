@@ -2,56 +2,65 @@
 {% block content %}
 {% load static %}
 <div class="p-3">
-    <div class="container">
-        <div class="row mt-3">
-        <div class="col mx-auto mb-3">
-            <h2>List of Job Seekers</h2>
-            <hr />
-            <p class="card-text">
-                <form method="GET">
-                    <div class="row">
-                        <div class="col-auto">
-                        <div class="input-group col-auto">
-                            <div class="input-group-text">Search</div>
-                            <input type="text" class="form-control" name="search">
-                        </div>
-                        </div>
-                        <div class="col-auto">
-                        <button class="btn bg-dark text-white" type="submit">Search</button>
-                        </div>
-                    </div>
-                </form>
-            </p>
-        </div>
-        </div>
-        <div class="row">
-        {% for jobSeeker in template_data.jobSeekers %}
-        <div class="col-md-8 col-12 mb-3 ms-md-auto">
-            <div class="card p-3 border-0 shadow">
-                <div class="d-flex gap-3 align-items-start flex-column flex-sm-row align-items-center">
-                    <img class="avatar flex-shrink-0" src="{{ jobSeeker.image.url }}" alt="{{ jobSeeker.full_name }}"
-                        width="128"
-                        height="128"
-                        loading="lazy">
-                    <div class="flex-grow-1 mt-3">
-                        <div class="fw-semibold lh-sm fs-4 text-truncate" style="max-width: 500px;">
-                            {{ jobSeeker.firstName }} {{ jobSeeker.lastName }}
-                        </div>
-                        <div class="text-body-secondary my-1 lh-sm mb-3 text-truncate" style="max-width: 500px;">
-                            {{ jobSeeker.degree }}
-                        </div>
-                        <div class="text-muted small my-1 lh-sm d-inline-block text-truncate" style="max-width: 500px;">
-                            {{ jobSeeker.headline }}
-                        </div>
-                    </div>
-                    <a href="{% url 'jobSeekers.show' id=jobSeeker.id %}" class="btn btn-primary ms-auto me-4">
-                        Visit Profile
-                    </a>
-                </div>
-            </div>  
-        </div>
-        {% endfor %}
-        </div>
+  <div class="container">
+    <div class="row mt-3">
+      <div class="col mx-auto mb-3">
+        <h2>List of Job Seekers</h2>
+        <hr />
+        <form method="GET">
+          <div class="row">
+            <div class="col-auto">
+              <div class="input-group col-auto">
+                <div class="input-group-text">Search</div>
+                <input type="text" class="form-control" name="search" value="{{ request.GET.search }}">
+              </div>
+            </div>
+            <div class="col-auto">
+              <button class="btn bg-dark text-white" type="submit">Search</button>
+            </div>
+          </div>
+        </form>
+      </div>
     </div>
+
+    <div class="row">
+      {% for jobSeeker in template_data.jobSeekers %}
+      <div class="col-md-8 col-12 mb-3 ms-md-auto">
+        <div class="card p-3 border-0 shadow">
+          <div class="d-flex gap-3 align-items-start flex-column flex-sm-row align-items-center">
+            
+            <!-- ✅ Safe image check -->
+            {% if jobSeeker.image %}
+              <img class="avatar flex-shrink-0" src="{{ jobSeeker.image.url }}" 
+                   alt="{{ jobSeeker.full_name }}"
+                   width="128" height="128" loading="lazy">
+            {% else %}
+              <img class="avatar flex-shrink-0" src="{% static 'img/default_profile.jpg' %}" 
+                   alt="No profile image"
+                   width="128" height="128" loading="lazy">
+            {% endif %}
+
+            <div class="flex-grow-1 mt-3">
+              <div class="fw-semibold lh-sm fs-4 text-truncate" style="max-width: 500px;">
+                {{ jobSeeker.firstName }} {{ jobSeeker.lastName }}
+              </div>
+              <div class="text-body-secondary my-1 lh-sm mb-3 text-truncate" style="max-width: 500px;">
+                {{ jobSeeker.degree }}
+              </div>
+              <div class="text-muted small my-1 lh-sm d-inline-block text-truncate" style="max-width: 500px;">
+                {{ jobSeeker.headline }}
+              </div>
+            </div>
+            <a href="{% url 'jobSeekers.show' id=jobSeeker.id %}" class="btn btn-primary ms-auto me-4">
+              Visit Profile
+            </a>
+          </div>
+        </div>
+      </div>
+      {% empty %}
+      <p>No job seekers found.</p>
+      {% endfor %}
+    </div>
+  </div>
 </div>
 {% endblock content %}

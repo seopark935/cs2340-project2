@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container py-4">
+  <h2>Edit Job: {{ job.title }}</h2>
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button class="btn btn-dark" type="submit">Save Changes</button>
+    <a href="{% url 'jobs.dashboard' %}" class="btn btn-outline-secondary">Cancel</a>
+  </form>
+</div>
+{% endblock %}

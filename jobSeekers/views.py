@@ -1,95 +1,83 @@
-from django.shortcuts import render, redirect, get_object_or_404
-from .models import JobSeeker, Experience, Skill, Link
-from django.db.models import F
+# jobSeekers/views.py
+from django.shortcuts import render, get_object_or_404, redirect
+from django.db.models import Q
 from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from accounts.decorators import recruiter_required, jobseeker_required
+from .models import JobSeeker
+from .forms import JobSeekerForm
 
+
+@login_required
+@recruiter_required
 def index(request):
-    search_term = request.GET.get('search')
+    """List all job seekers (for recruiters only)."""
+    search_term = request.GET.get("search", "")
+
+    # Start with all job seekers
+    jobSeekers = JobSeeker.objects.all()
+
+    # Apply search if provided
     if search_term:
-        jobSeekers = JobSeeker.objects.filter(name__icontains=search_term)
-    else:
-        jobSeekers = JobSeeker.objects.filter()
-        
-    template_data = {}
-    template_data['title'] = 'Job Seeker'
-    template_data['jobSeekers'] = jobSeekers
+        jobSeekers = jobSeekers.filter(
+            Q(firstName__icontains=search_term) |
+            Q(lastName__icontains=search_term) |
+            Q(headline__icontains=search_term)
+        )
 
-    return render(request, 'jobSeekers/index.html',
-                  {'template_data': template_data})
+    template_data = {
+        "title": "Job Seekers",
+        "jobSeekers": jobSeekers,
+    }
+    return render(request, "jobSeekers/index.html", {"template_data": template_data})
 
+
+@login_required
+@recruiter_required
 def show(request, id):
-    jobSeeker = JobSeeker.objects.get(id=id)
-    template_data = {}
-    template_data['jobSeeker'] = jobSeeker
-    template_data['name'] = jobSeeker.firstName + ' ' + jobSeeker.lastName
-    template_data['experiences'] = Experience.objects.filter(jobSeeker=jobSeeker)
-    template_data['skills'] = Skill.objects.filter(jobSeeker=jobSeeker)
-    template_data['links'] = Link.objects.filter(jobSeeker=jobSeeker)
-    return render(request, 'jobSeekers/show.html',
-                  {'template_data': template_data})
+    """Show details of a single job seeker (for recruiters only)."""
+    jobSeeker = get_object_or_404(JobSeeker, id=id)
 
-    # movie = Movie.objects.get(id=id)
-    # reviews = Review.objects.filter(movie=movie)
-    # template_data = {}
-    # template_data['title'] = movie.name
-    # template_data['movie'] = movie
-    # template_data['reviews'] = reviews
-    # return render(request, 'movies/show.html',
-    #               {'template_data': template_data}
+    template_data = {
+        "jobSeeker": jobSeeker,
+        "name": f"{jobSeeker.firstName} {jobSeeker.lastName}",
+        "experiences": jobSeeker.experience.all(),   # ManyToMany forward relation
+        "skills": jobSeeker.skills.all(),
+        "links": jobSeeker.links.all(),
+    }
 
-# @login_required
-# def create_review(request, id):
-#     if request.method == 'POST' and request.POST['comment'] != '':
-#         movie = Movie.objects.get(id=id)
-#         print("here\n")
-#         review = Review()
-#         print("created\n")
-#         review.comment = request.POST['comment']
-#         review.movie = movie
-#         review.user = request.user
-#         review.save()
-#         return redirect('movies.show', id=id)
-#     else:
-#         return redirect('movies.show', id=id)
-    
-# @login_required
-# def edit_review(request, id, review_id):
-#     review = get_object_or_404(Review, id=review_id)
-#     if request.user != review.user:
-#         return redirect('movies.show', id=id)
-#     if request.method == 'GET':
-#         template_data = {}
-#         template_data['title'] = 'Edit Review'
-#         template_data['review'] = review
-#         return render(request, 'movies/edit_review.html', {'template_data': template_data})
-#     elif request.method == 'POST' and request.POST['comment'] != '':
-#         review = Review.objects.get(id=review_id)
-#         review.comment = request.POST['comment']
-#         review.save()
-#         return redirect('movies.show', id=id)
-#     else:
-#         return redirect('movies.show', id=id)
-    
+    return render(request, "jobSeekers/show.html", {"template_data": template_data})
 
-# @login_required
-# def delete_review(request, id, review_id):
-#     review = get_object_or_404(Review, id=review_id)
-#     review.delete()
-#     return redirect('movies.show', id=id)
 
-# def like_review(request, id, review_id):
-#     review = get_object_or_404(Review, id=review_id)
-#     review.likes += 1
-#     review.save()
-#     return redirect('movies.show', id=id)
+@login_required
+@jobseeker_required
+def my_profile(request):
+    """Allow a job seeker to view their own profile."""
+    jobSeeker = get_object_or_404(JobSeeker, user=request.user)  # ✅ safe forward lookup
 
-# def sort_review(request, id):
-#     movie = Movie.objects.get(id=id)
-#     reviews = Review.objects.filter(movie=movie).order_by('-likes')
-#     template_data = {}
-#     template_data['title'] = movie.name
-#     template_data['movie'] = movie
-#     template_data['reviews'] = reviews
-#     return render(request, 'movies/show.html',
-#                   {'template_data': template_data})
+    template_data = {
+        "jobSeeker": jobSeeker,
+        "name": f"{jobSeeker.firstName} {jobSeeker.lastName}",
+        "experiences": jobSeeker.experience.all(),
+        "skills": jobSeeker.skills.all(),
+        "links": jobSeeker.links.all(),
+    }
+    return render(request, "jobSeekers/show.html", {"template_data": template_data})
 
+
+@login_required
+@jobseeker_required
+def edit_profile(request):
+    """Allow a job seeker to edit their own profile."""
+    jobSeeker = get_object_or_404(JobSeeker, user=request.user)  # ✅ safe forward lookup
+
+    if request.method == "POST":
+        form = JobSeekerForm(request.POST, request.FILES, instance=jobSeeker)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Profile updated successfully.")
+            return redirect("jobSeekers.my_profile")
+    else:
+        form = JobSeekerForm(instance=jobSeeker)
+
+    return render(request, "jobSeekers/edit.html", {"form": form})

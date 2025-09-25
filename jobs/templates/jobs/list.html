@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container py-4">
+  <h2 class="mb-3">Jobs</h2>
+
+  <!-- Filter form -->
+  <form method="get" class="row gy-2 gx-3 align-items-end mb-4">
+    <!-- Title -->
+    <div class="col-sm-3">
+      <label class="form-label">Title</label>
+      <input class="form-control" type="text" name="title" value="{{ request.GET.title|default_if_none:'' }}">
+    </div>
+
+    <!-- Location -->
+    <div class="col-sm-3">
+      <label class="form-label">Location</label>
+      <input class="form-control" type="text" name="location" value="{{ request.GET.location|default_if_none:'' }}">
+    </div>
+
+    <!-- Remote type -->
+    <div class="col-sm-2">
+      <label class="form-label">Remote type</label>
+      <select class="form-select" name="remote_type" multiple>
+        {% for val,label in filter.form.remote_type.field.choices %}
+          <option value="{{ val }}" {% if val in selected_remote_types %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      <small class="text-muted">Ctrl/Cmd-click for multi</small>
+    </div>
+
+    <!-- Visa sponsorship -->
+    <div class="col-sm-2">
+      <label class="form-label">Visa sponsorship</label>
+      <select class="form-select" name="visa_sponsorship">
+        <option value="">Any</option>
+        <option value="true"  {% if request.GET.visa_sponsorship == 'true' %}selected{% endif %}>Yes</option>
+        <option value="false" {% if request.GET.visa_sponsorship == 'false' %}selected{% endif %}>No</option>
+      </select>
+    </div>
+
+    <!-- Salary min -->
+    <div class="col-sm-1">
+      <label class="form-label">Min $</label>
+      <input class="form-control" type="number" name="salary_min" value="{{ request.GET.salary_min|default_if_none:'' }}">
+    </div>
+
+    <!-- Salary max -->
+    <div class="col-sm-1">
+      <label class="form-label">Max $</label>
+      <input class="form-control" type="number" name="salary_max" value="{{ request.GET.salary_max|default_if_none:'' }}">
+    </div>
+
+    <!-- Submit -->
+    <div class="col-12 mt-2">
+      <button class="btn btn-dark">Filter</button>
+      <a href="{% url 'jobs.list' %}" class="btn btn-outline-secondary">Clear</a>
+    </div>
+  </form>
+
+  <!-- Job list -->
+  {% for job in jobs %}
+    <div class="card mb-3">
+      <div class="card-body">
+        <h5 class="card-title">{{ job.title }}</h5>
+
+        <div class="text-muted mb-1">
+          {{ job.location }} • {{ job.get_remote_type_display }}
+          {% if job.visa_sponsorship %} • Visa Sponsorship{% endif %}
+          {% if job.salary_min or job.salary_max %}
+            • ${{ job.salary_min|default:"?" }}–{{ job.salary_max|default:"?" }}
+          {% endif %}
+        </div>
+
+        <div class="small text-secondary mb-2">
+          Skills:
+          {% for s in job.skills.all %}
+            <span class="badge text-bg-light me-1">{{ s.name }}</span>
+          {% empty %}
+            <em>None</em>
+          {% endfor %}
+        </div>
+
+        <p class="card-text">{{ job.description|truncatewords:40 }}</p>
+      </div>
+    </div>
+  {% empty %}
+    <p>No jobs match your filters.</p>
+  {% endfor %}
+</div>
+{% endblock %}
