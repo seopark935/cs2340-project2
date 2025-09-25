@@ -1,6 +1,7 @@
 # jobSeekers/models.py
 from django.db import models
 from django.conf import settings  # use settings.AUTH_USER_MODEL
+from django.urls import reverse
 
 class JobSeeker(models.Model):
     user = models.OneToOneField(
@@ -24,6 +25,9 @@ class JobSeeker(models.Model):
     experience = models.ManyToManyField("Experience", related_name="jobSeekers", blank=True)
     skills     = models.ManyToManyField("Skill", related_name="jobSeekers", blank=True)
 
+    def get_absolute_url(self):
+        return reverse("jobSeekers.show", args=[self.id])
+    
     def __str__(self):
         return f"{self.firstName} {self.lastName}"
 

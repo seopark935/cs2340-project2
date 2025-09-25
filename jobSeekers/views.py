@@ -1,9 +1,12 @@
 # jobSeekers/views.py
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 from django.db.models import Q
 from django.contrib.auth.decorators import login_required
-from accounts.decorators import recruiter_required
+from django.contrib import messages
+from accounts.decorators import recruiter_required, jobseeker_required
 from .models import JobSeeker
+from .forms import JobSeekerForm
+
 
 @login_required
 @recruiter_required
@@ -37,77 +40,44 @@ def show(request, id):
 
     template_data = {
         "jobSeeker": jobSeeker,
-        "name": jobSeeker.full_name,
-        "experiences": jobSeeker.experience.all(),   # ✅ correct ManyToMany usage
-        "skills": jobSeeker.skills.all(),            # ✅ correct ManyToMany usage
-        "links": jobSeeker.links.all(),              # ✅ via related_name="links"
+        "name": f"{jobSeeker.firstName} {jobSeeker.lastName}",
+        "experiences": jobSeeker.experience.all(),   # ManyToMany forward relation
+        "skills": jobSeeker.skills.all(),
+        "links": jobSeeker.links.all(),
     }
 
     return render(request, "jobSeekers/show.html", {"template_data": template_data})
 
 
-    # movie = Movie.objects.get(id=id)
-    # reviews = Review.objects.filter(movie=movie)
-    # template_data = {}
-    # template_data['title'] = movie.name
-    # template_data['movie'] = movie
-    # template_data['reviews'] = reviews
-    # return render(request, 'movies/show.html',
-    #               {'template_data': template_data}
+@login_required
+@jobseeker_required
+def my_profile(request):
+    """Allow a job seeker to view their own profile."""
+    jobSeeker = get_object_or_404(JobSeeker, user=request.user)  # ✅ safe forward lookup
 
-# @login_required
-# def create_review(request, id):
-#     if request.method == 'POST' and request.POST['comment'] != '':
-#         movie = Movie.objects.get(id=id)
-#         print("here\n")
-#         review = Review()
-#         print("created\n")
-#         review.comment = request.POST['comment']
-#         review.movie = movie
-#         review.user = request.user
-#         review.save()
-#         return redirect('movies.show', id=id)
-#     else:
-#         return redirect('movies.show', id=id)
-    
-# @login_required
-# def edit_review(request, id, review_id):
-#     review = get_object_or_404(Review, id=review_id)
-#     if request.user != review.user:
-#         return redirect('movies.show', id=id)
-#     if request.method == 'GET':
-#         template_data = {}
-#         template_data['title'] = 'Edit Review'
-#         template_data['review'] = review
-#         return render(request, 'movies/edit_review.html', {'template_data': template_data})
-#     elif request.method == 'POST' and request.POST['comment'] != '':
-#         review = Review.objects.get(id=review_id)
-#         review.comment = request.POST['comment']
-#         review.save()
-#         return redirect('movies.show', id=id)
-#     else:
-#         return redirect('movies.show', id=id)
-    
+    template_data = {
+        "jobSeeker": jobSeeker,
+        "name": f"{jobSeeker.firstName} {jobSeeker.lastName}",
+        "experiences": jobSeeker.experience.all(),
+        "skills": jobSeeker.skills.all(),
+        "links": jobSeeker.links.all(),
+    }
+    return render(request, "jobSeekers/show.html", {"template_data": template_data})
 
-# @login_required
-# def delete_review(request, id, review_id):
-#     review = get_object_or_404(Review, id=review_id)
-#     review.delete()
-#     return redirect('movies.show', id=id)
 
-# def like_review(request, id, review_id):
-#     review = get_object_or_404(Review, id=review_id)
-#     review.likes += 1
-#     review.save()
-#     return redirect('movies.show', id=id)
+@login_required
+@jobseeker_required
+def edit_profile(request):
+    """Allow a job seeker to edit their own profile."""
+    jobSeeker = get_object_or_404(JobSeeker, user=request.user)  # ✅ safe forward lookup
 
-# def sort_review(request, id):
-#     movie = Movie.objects.get(id=id)
-#     reviews = Review.objects.filter(movie=movie).order_by('-likes')
-#     template_data = {}
-#     template_data['title'] = movie.name
-#     template_data['movie'] = movie
-#     template_data['reviews'] = reviews
-#     return render(request, 'movies/show.html',
-#                   {'template_data': template_data})
+    if request.method == "POST":
+        form = JobSeekerForm(request.POST, request.FILES, instance=jobSeeker)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Profile updated successfully.")
+            return redirect("jobSeekers.my_profile")
+    else:
+        form = JobSeekerForm(instance=jobSeeker)
 
+    return render(request, "jobSeekers/edit.html", {"form": form})
