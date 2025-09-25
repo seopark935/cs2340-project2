@@ -84,10 +84,16 @@
 
         <p class="card-text">{{ job.description|truncatewords:40 }}</p>
            <!-- Apply button -->
-           {% if user.is_authenticated %}
-           <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#applyModal{{ job.id }}">
-             Apply
+        {% if user.is_authenticated %}
+           {% if job.id in applied_jobs %}
+           <button type="button" class="btn btn-secondary" disabled>
+               Pending
            </button>
+          {% else %}
+           <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#applyModal{{ job.id }}">
+               Apply
+           </button>
+           {% endif %}
            <div class="modal fade" id="applyModal{{ job.id }}" tabindex="-1" aria-hidden="true">            <div class="modal-dialog">
               <div class="modal-content">
                 

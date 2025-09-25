@@ -12,10 +12,14 @@ def job_list(request):
     qs = Job.objects.all().select_related("created_by").prefetch_related("skills")
     f = JobFilter(request.GET, queryset=qs)
     selected_remote_types = request.GET.getlist("remote_type")
+    applied_jobs = []
+    if request.user.is_authenticated:
+        applied_jobs = Application.objects.filter(user=request.user).values_list('job_id', flat=True)
     return render(request, "jobs/list.html", {
         "filter": f,
         "jobs": f.qs,
         "selected_remote_types": selected_remote_types,
+        "applied_jobs": applied_jobs,
     })
 
 # Recruiter dashboard (see own jobs only)
