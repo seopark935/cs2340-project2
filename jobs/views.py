@@ -1,6 +1,8 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from accounts.decorators import recruiter_required
+from django.contrib import messages
+from .models import Job, Application
 from .models import Job
 from .forms import JobForm
 from .filters import JobFilter
@@ -51,4 +53,16 @@ def job_edit(request, pk):
             return redirect("jobs.dashboard")
     else:
         form = JobForm(instance=job)
+
     return render(request, "jobs/edit.html", {"form": form, "job": job})
+
+
+@login_required
+def apply_job(request, job_id):
+    job = get_object_or_404(Job, id=job_id)
+    if request.method == "POST":
+        message = request.POST.get("message")
+        Application.objects.create(job=job, user=request.user, message=message)
+        messages.success(request, "Your application has been sent!")
+        return redirect("jobs.list")
+    return redirect("job_list")
