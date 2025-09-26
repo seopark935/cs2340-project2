@@ -25,6 +25,12 @@ class JobSeeker(models.Model):
     experience = models.ManyToManyField("Experience", related_name="jobSeekers", blank=True)
     skills     = models.ManyToManyField("Skill", related_name="jobSeekers", blank=True)
 
+    #privacy
+    hide_image = models.BooleanField(default=False)
+    hide_headline = models.BooleanField(default=False)
+    hide_profile = models.BooleanField(default=False)
+    hide_location = models.BooleanField(default=False)
+
     def get_absolute_url(self):
         return reverse("jobSeekers.show", args=[self.id])
     
