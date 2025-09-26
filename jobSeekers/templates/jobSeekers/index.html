@@ -8,18 +8,37 @@
         <h2>List of Job Seekers</h2>
         <hr />
         <form method="GET">
-          <div class="row">
-            <div class="col-auto">
-              <div class="input-group col-auto">
-                <div class="input-group-text">Search</div>
-                <input type="text" class="form-control" name="search" value="{{ request.GET.search }}">
-              </div>
-            </div>
-            <div class="col-auto">
-              <button class="btn bg-dark text-white" type="submit">Search</button>
-            </div>
-          </div>
-        </form>
+  <div class="row g-2">
+    <div class="col-md-3">
+      <input type="text" class="form-control" name="name"
+             placeholder="Search by name or headline"
+             value="{{ request.GET.name }}">
+    </div>
+    <div class="col-md-3">
+      <input type="text" class="form-control" name="location"
+             placeholder="Search by location"
+             value="{{ request.GET.location }}">
+    </div>
+    <div class="col-md-3">
+      <input type="text" class="form-control" name="skill"
+             placeholder="Search by skill"
+             value="{{ request.GET.skill }}">
+    </div>
+    <div class="col-md-3">
+      <input type="text" class="form-control" name="experience"
+             placeholder="Search by experience"
+             value="{{ request.GET.experience }}">
+    </div>
+  </div>
+  <div class="row mt-2">
+    <div class="col-auto">
+      <button class="btn bg-dark text-white" type="submit">Search</button>
+      <a href="{% url 'jobSeekers.index' %}" class="btn btn-secondary">Clear</a>
+    </div>
+  </div>
+</form>
+
+
       </div>
     </div>
 

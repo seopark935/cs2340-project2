@@ -2,36 +2,32 @@
 from django.db import models
 from django.conf import settings  # use settings.AUTH_USER_MODEL
 from django.urls import reverse
+# from django.contrib.auth.models import User
+
+class Skill(models.Model):
+    # your admin used `name` earlier; standardize on `name`
+    name = models.CharField(max_length=255, unique=True)
+    def __str__(self): return self.name
 
 class JobSeeker(models.Model):
-    user = models.OneToOneField(
-        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="jobseeker_profile"
-    )
-
-    # general personal information
-    firstName = models.CharField("First Name", max_length=255)
-    lastName  = models.CharField("Last Name", max_length=255)
-    location  = models.CharField("Location", max_length=255, blank=True)
-    image     = models.ImageField("Profile Image", upload_to='jobSeeker_images/', null=True, blank=True)
-
-    # education
-    education = models.ForeignKey("Institution", on_delete=models.PROTECT, related_name="jobSeekers", null=True, blank=True)
-    degree    = models.CharField(max_length=255, blank=True)
-    startYear = models.IntegerField("Start Year", null=True, blank=True)
-    endYear   = models.IntegerField("End Year", null=True, blank=True)
-
-    # professional
-    headline   = models.TextField(blank=True)
-    experience = models.ManyToManyField("Experience", related_name="jobSeekers", blank=True)
-    skills     = models.ManyToManyField("Skill", related_name="jobSeekers", blank=True)
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    firstName = models.CharField(max_length=100)
+    lastName = models.CharField(max_length=100)
+    location = models.CharField(max_length=100, blank=True)
+    image = models.ImageField(upload_to="profiles/", blank=True, null=True)
+    education = models.CharField(max_length=200, blank=True, null=True)
+    degree = models.CharField(max_length=200, blank=True)
+    startYear = models.IntegerField(blank=True, null=True)
+    endYear = models.IntegerField(blank=True, null=True)
+    headline = models.CharField(max_length=255, blank=True)
+    experience = models.TextField(blank=True)   # ✅ plain text description
+    skills = models.CharField(max_length=500, blank=True)  # ✅ many-to-many
 
     #privacy
     hide_image = models.BooleanField(default=False)
     hide_headline = models.BooleanField(default=False)
     hide_profile = models.BooleanField(default=False)
     hide_location = models.BooleanField(default=False)
-
-
 
     def get_absolute_url(self):
         return reverse("jobSeekers.show", args=[self.id])
@@ -59,10 +55,6 @@ class Experience(models.Model):
     def __str__(self): return self.name
 
 
-class Skill(models.Model):
-    # your admin used `name` earlier; standardize on `name`
-    name = models.CharField(max_length=255, unique=True)
-    def __str__(self): return self.name
 
 
 class Link(models.Model):
