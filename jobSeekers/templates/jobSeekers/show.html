@@ -46,7 +46,7 @@
             {{ experience.name }} | {{ experience.location }}
           </div>
           <div class="text-body-secondary my-1 lh-sm mb-3">
-            {% if experience.endDate == None %}
+            {% if experience.endDate == "" %}
               Since {{ experience.startDate }}
             {% else %}
               {{ experience.startDate }} - {{ experience.endDate }}
