@@ -7,7 +7,7 @@
 
       <div class="col-md-6 mx-auto mb-3 text-center">
 
-        {% if template_data.jobSeeker.image and not template_data_jobSeeker.hide_image %}
+        {% if template_data.jobSeeker.image and not template_data.jobSeeker.hide_image %}
           <img src="{{ template_data.jobSeeker.image.url }}" class="avatar-big" alt="{{ template_data.name }}">
         {% else %}
           <img src="{% static 'img/default_profile.jpg' %}" class="avatar-big" alt="No profile image">
@@ -23,10 +23,11 @@
       </div>
 
       <h2>{{ template_data.name }}</h2>
+      {% if not template_data.jobSeeker.hide_location %}
+        <p>{{ template_data.jobSeeker.location }}</p>
+      {% endif %}
 
-      {% if template_data.jobSeeker.education.name == None %}
-        No education information.
-      {% else %}
+      {% if template_data.jobSeeker.education.name %}
         <div class="fw-light">
           {{ template_data.jobSeeker.education.name }} | {{ template_data.jobSeeker.education.location }}
         </div>
@@ -39,7 +40,9 @@
         </div>
       {% endif %}
 
-      <div class="mt-3">{{ template_data.jobSeeker.headline }}</div>
+      {% if not template_data.jobSeeker.hide_headline %}
+        <div class="mt-3">{{ template_data.jobSeeker.headline }}</div>
+      {% endif %}
 
       <h4 class="mt-5">Work Experience</h4>
 
@@ -64,7 +67,7 @@
         <p>No experiences listed.</p>
       {% endfor %}
 
-      <h4 class="mt-3">Skills</h4>
+      <h4 class="mt-5">Skills</h4>
       <hr />
       {% for skill in template_data.skills %}
         <div class="col-md-8 col-12 mb-2">
