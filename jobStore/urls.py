@@ -1,5 +1,5 @@
 """
-URL configuration for moviesstore project.
+URL configuration for jobStore project.
 
 The `urlpatterns` list routes URLs to views. For more information please see:
     https://docs.djangoproject.com/en/5.0/topics/http/urls/
@@ -25,6 +25,5 @@ urlpatterns = [
     path('jobSeekers/', include('jobSeekers.urls')),
     path('accounts/', include('accounts.urls')),
     path("jobs/", include("jobs.urls")),
-   # path('cart/', include('cart.urls')),
 ]
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

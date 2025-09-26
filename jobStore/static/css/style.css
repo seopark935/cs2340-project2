@@ -1,3 +1,4 @@
+html { outline: 4px dashed hotpink !important; }
 .bg-index{
     background: url("/static/img/background.jpg") no-repeat
       fixed;
@@ -48,6 +49,16 @@
 .avatar {
     inline-size: 128px;           /* width */
     block-size: 128px;            /* height */
+    border-radius: 50%;           /* circle */
+    object-fit: cover;            /* crop to fill without distortion */
+    object-position: center;
+    display: block;
+    box-shadow: 0 1px 4px rgba(0,0,0,.12);
+}
+
+.avatar-big {
+    inline-size: 300px;           /* width */
+    block-size: 300px;            /* height */
     border-radius: 50%;           /* circle */
     object-fit: cover;            /* crop to fill without distortion */
     object-position: center;
