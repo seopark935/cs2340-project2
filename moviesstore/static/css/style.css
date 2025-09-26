@@ -35,11 +35,14 @@
     color: #fff;
 }
 
-/* .img-card-200 {
-    width: fit-content;
+.img-card-200 {
+    width: 200px;
     max-height: 300px;
+    object-fit: cover;   /* crop & fill */
+
 }
 
+/*
 .img-card-400 {
     width: fit-content;
     max-height: 400px;

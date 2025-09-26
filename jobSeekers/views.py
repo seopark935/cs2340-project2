@@ -15,7 +15,8 @@ def index(request):
     search_term = request.GET.get("search", "")
 
     # Start with all job seekers
-    jobSeekers = JobSeeker.objects.all()
+    """jobSeekers = JobSeeker.objects.all()"""
+    jobSeekers = JobSeeker.objects.filter(hide_profile=False)
 
     # Apply search if provided
     if search_term:
@@ -44,6 +45,7 @@ def show(request, id):
         "experiences": jobSeeker.experience.all(),   # ManyToMany forward relation
         "skills": jobSeeker.skills.all(),
         "links": jobSeeker.links.all(),
+        "hide_profile": jobSeeker.hide_profile,
     }
 
     return render(request, "jobSeekers/show.html", {"template_data": template_data})

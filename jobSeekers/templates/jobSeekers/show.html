@@ -6,11 +6,17 @@
     <div class="col-md-6 mx-auto mb-3">
 
       <div class="col-md-6 mx-auto mb-3 text-center">
-        {% if template_data.jobSeeker.image %}
-          <img src="{{ template_data.jobSeeker.image.url }}" class="rounded img-card-200" alt="{{ template_data.name }}">
+        {% if not template_data.jobSeeker.hide_image%}
+          {% if template_data.jobSeeker.image%}
+              <img src="{{ template_data.jobSeeker.image.url }}" class="rounded img-card-200" alt="{{ template_data.name }}">
+          {% else %}
+            <img src="{% static 'img/default_profile.jpg' %}" class="rounded img-card-200" alt="No profile image">
+          {% endif %}
         {% else %}
           <img src="{% static 'img/default_profile.jpg' %}" class="rounded img-card-200" alt="No profile image">
         {% endif %}
+
+        
         {% if user.is_authenticated and user.is_jobseeker and template_data.jobSeeker.user_id == user.id %}
         <div class="mt-3">
             <a href="{% url 'jobSeekers.edit_profile' %}" class="btn btn-outline-primary">Edit Profile</a>
@@ -20,22 +26,21 @@
       </div>
 
       <h2>{{ template_data.name }}</h2>
-
       <div class="fw-light">
         {{ template_data.jobSeeker.education.name }}
       </div>
       <div class="text-body-secondary">
         {{ template_data.jobSeeker.startYear }} - {{ template_data.jobSeeker.endYear }}
       </div>
-
-      <div class="mt-4 mb-5">{{ template_data.jobSeeker.headline }}</div>
-
+      {% if not template_data.jobSeeker.hide_headline %}
+        <div class="mt-4 mb-5">{{ template_data.jobSeeker.headline }}</div>
+      {% endif %}
       <h4>Work Experience</h4>
       <hr />
       {% for experience in template_data.experiences %}
         <div class="col-md-8 col-12 mb-5">
           <div class="fw-semibold lh-sm fs-5 text-truncate" style="max-width: 500px;">
-            {{ experience.name }} | {{ experience.location }}
+            {{ experience.name }} | {% if not template_data.jobSeeker.hide_location %} {{ experience.location }} {% endif %}
           </div>
           <div class="text-body-secondary my-1 lh-sm mb-3">
             {% if experience.endDate == "" %}
@@ -71,7 +76,6 @@
       {% empty %}
         <p>No links provided.</p>
       {% endfor %}
-
     </div>
   </div>
 </div>
