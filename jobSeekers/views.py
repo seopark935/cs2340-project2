@@ -3,8 +3,9 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.db.models import Q
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.views.decorators.http import require_POST
 from accounts.decorators import recruiter_required, jobseeker_required
-from .models import JobSeeker
+from .models import JobSeeker, Skill, Experience, Link
 from .forms import JobSeekerForm
 
 
@@ -98,5 +99,69 @@ def edit_profile(request):
             return redirect("jobSeekers.my_profile")
     else:
         form = JobSeekerForm(instance=jobSeeker)
+    
+    template_data = {}
+    template_data['form'] = form
+    template_data['jobSeeker'] = jobSeeker
 
-    return render(request, "jobSeekers/edit.html", {"form": form})
+    return render(request, "jobSeekers/edit.html", {"template_data": template_data})
+
+@login_required
+@jobseeker_required
+def add_skill(request):
+    jobSeeker = get_object_or_404(JobSeeker, user=request.user)
+
+    name = (request.POST.get("name") or "").strip()
+    if not name:
+        return HttpResponseBadRequest("Skill name required.")
+
+    skill = Skill()
+    skill.name = name
+    skill.save()
+    jobSeeker.skills.add(skill)
+    jobSeeker.save()
+
+    # redirect back to your editor page (adjust the URL name/args to your project)
+    return redirect("jobSeekers.edit_profile")
+
+@login_required
+@jobseeker_required
+def add_link(request):
+    jobSeeker = get_object_or_404(JobSeeker, user=request.user)
+
+    name = (request.POST.get("name") or "").strip()
+    if not name:
+        return HttpResponseBadRequest("Skill name required.")
+
+    link = Link()
+    link.url = name
+    link.save()
+    jobSeeker.links.add(link)
+    jobSeeker.save()
+
+    # redirect back to your editor page (adjust the URL name/args to your project)
+    return redirect("jobSeekers.edit_profile")
+
+@login_required
+@jobseeker_required
+def add_experience(request):
+    jobSeeker = get_object_or_404(JobSeeker, user=request.user)
+
+    name = (request.POST.get("name") or "").strip()
+    location = (request.POST.get("location") or "").strip()
+    startDate = (request.POST.get("startDate") or "").strip()
+    endDate = (request.POST.get("endDate") or "").strip()
+    description = (request.POST.get("description") or "").strip()
+
+    experience = Experience()
+    experience.name = name
+    experience.location = location
+    experience.startDate = startDate
+    experience.endDate = endDate
+    experience.description = description
+    experience.save()
+    jobSeeker.experience.add(experience)
+    jobSeeker.save()
+
+    # redirect back to your editor page (adjust the URL name/args to your project)
+    return redirect("jobSeekers.edit_profile")
