@@ -3,8 +3,8 @@ from .models import JobSeeker, Institution, Experience, Skill, Link
 
 class JobSeekerAdmin(admin.ModelAdmin):
     search_fields = ['firstName', 'lastName', 'headline']
-    autocomplete_fields = ('education',)
-    filter_horizontal = ("skills", "experience")  # many-to-many pickers
+    autocomplete_fields = ('user',)
+    #filter_horizontal = ("skills",)  # many-to-many pickers
 
 class InstitutionAdmin(admin.ModelAdmin):
     search_fields = ("name", "location")   # needed for autocomplete
