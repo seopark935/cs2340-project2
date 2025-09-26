@@ -20,7 +20,7 @@ def index(request):
     experience_term = request.GET.get("experience", "")
 
 
-    # Start with all job seekers
+    # Base querySet (public profiles only)
     jobSeekers = JobSeeker.objects.filter(hide_profile=False)
 
     if name_term:
@@ -34,10 +34,10 @@ def index(request):
         jobSeekers = jobSeekers.filter(location__icontains=location_term)
 
     if skill_term:
-        jobSeekers = jobSeekers.filter(skills__icontains=skill_term)
+        jobSeekers = jobSeekers.filter(skills__name__icontains=skill_term)
 
     if experience_term:
-        jobSeekers = jobSeekers.filter(experience__icontains=experience_term)
+        jobSeekers = jobSeekers.filter(experience__name__icontains=experience_term)
 
     # prevent duplicates when joining skills/projects
     jobSeekers = jobSeekers.distinct()
