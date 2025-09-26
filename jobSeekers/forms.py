@@ -1,5 +1,5 @@
 from django import forms
-from .models import JobSeeker
+from .models import JobSeeker, Skill
 
 class JobSeekerForm(forms.ModelForm):
     class Meta:
@@ -19,6 +19,7 @@ class JobSeekerForm(forms.ModelForm):
         ]
         widgets = {
             "headline": forms.Textarea(attrs={"rows": 3}),
-            "experience": forms.CheckboxSelectMultiple,
-            "skills": forms.CheckboxSelectMultiple,
+            "experience": forms.Textarea(attrs={"rows": 5}),  # ✅ text area for job history
+            "skills": forms.TextInput(attrs={"placeholder": "e.g. Python, Django, SQL"}),          # ✅ many-to-many checkbox
         }
+
