@@ -1,5 +1,5 @@
 from django import forms
-from .models import JobSeeker
+from .models import JobSeeker, Skill
 
 class JobSeekerForm(forms.ModelForm):
     class Meta:
@@ -35,3 +35,4 @@ class JobSeekerForm(forms.ModelForm):
             'hide_headline': "Keep your headline private",
             'hide_profile': "Keep profile hidden"
         }
+

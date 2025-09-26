@@ -8,29 +8,46 @@ from .models import JobSeeker
 from .forms import JobSeekerForm
 
 
+from django.db.models import Q
+
 @login_required
 @recruiter_required
 def index(request):
     """List all job seekers (for recruiters only)."""
-    search_term = request.GET.get("search", "")
+    name_term = request.GET.get("name", "")
+    location_term = request.GET.get("location", "")
+    skill_term = request.GET.get("skill", "")
+    experience_term = request.GET.get("experience", "")
+
 
     # Start with all job seekers
-    """jobSeekers = JobSeeker.objects.all()"""
     jobSeekers = JobSeeker.objects.filter(hide_profile=False)
 
-    # Apply search if provided
-    if search_term:
+    if name_term:
         jobSeekers = jobSeekers.filter(
-            Q(firstName__icontains=search_term) |
-            Q(lastName__icontains=search_term) |
-            Q(headline__icontains=search_term)
+            Q(firstName__icontains=name_term) |
+            Q(lastName__icontains=name_term) |
+            Q(headline__icontains=name_term)
         )
+
+    if location_term:
+        jobSeekers = jobSeekers.filter(location__icontains=location_term)
+
+    if skill_term:
+        jobSeekers = jobSeekers.filter(skills__icontains=skill_term)
+
+    if experience_term:
+        jobSeekers = jobSeekers.filter(experience__icontains=experience_term)
+
+    # prevent duplicates when joining skills/projects
+    jobSeekers = jobSeekers.distinct()
 
     template_data = {
         "title": "Job Seekers",
         "jobSeekers": jobSeekers,
     }
     return render(request, "jobSeekers/index.html", {"template_data": template_data})
+
 
 
 @login_required
@@ -42,7 +59,7 @@ def show(request, id):
     template_data = {
         "jobSeeker": jobSeeker,
         "name": f"{jobSeeker.firstName} {jobSeeker.lastName}",
-        "experiences": jobSeeker.experience.all(),   # ManyToMany forward relation
+        "experiences": jobSeeker.experience,   # ManyToMany forward relation
         "skills": jobSeeker.skills.all(),
         "links": jobSeeker.links.all(),
         "hide_profile": jobSeeker.hide_profile,
@@ -60,8 +77,8 @@ def my_profile(request):
     template_data = {
         "jobSeeker": jobSeeker,
         "name": f"{jobSeeker.firstName} {jobSeeker.lastName}",
-        "experiences": jobSeeker.experience.all(),
-        "skills": jobSeeker.skills.all(),
+        "experiences": jobSeeker.experience,
+        "skills": jobSeeker.skills,
         "links": jobSeeker.links.all(),
     }
     return render(request, "jobSeekers/show.html", {"template_data": template_data})
