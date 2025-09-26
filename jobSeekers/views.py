@@ -59,7 +59,7 @@ def show(request, id):
     template_data = {
         "jobSeeker": jobSeeker,
         "name": f"{jobSeeker.firstName} {jobSeeker.lastName}",
-        "experiences": jobSeeker.experience,   # ManyToMany forward relation
+        "experiences": jobSeeker.experience.all(),  # ManyToMany forward relation
         "skills": jobSeeker.skills.all(),
         "links": jobSeeker.links.all(),
         "hide_profile": jobSeeker.hide_profile,
@@ -77,8 +77,8 @@ def my_profile(request):
     template_data = {
         "jobSeeker": jobSeeker,
         "name": f"{jobSeeker.firstName} {jobSeeker.lastName}",
-        "experiences": jobSeeker.experience,
-        "skills": jobSeeker.skills,
+        "experiences": jobSeeker.experience.all(),
+        "skills": jobSeeker.skills.all(),
         "links": jobSeeker.links.all(),
     }
     return render(request, "jobSeekers/show.html", {"template_data": template_data})

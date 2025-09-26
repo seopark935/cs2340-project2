@@ -27,6 +27,13 @@
         <p>{{ template_data.jobSeeker.location }}</p>
       {% endif %}
 
+      {% if not template_data.jobSeeker.hide_headline %}
+      <div class="mt-3">{{ template_data.jobSeeker.headline }}</div>
+      {% endif %}
+
+      <h4 class="mt-5">Education</h4>
+      <hr />
+
       {% if template_data.jobSeeker.education.name %}
         <div class="fw-light">
           {{ template_data.jobSeeker.education.name }} | {{ template_data.jobSeeker.education.location }}
@@ -38,24 +45,8 @@
             {{ template_data.jobSeeker.startYear }} - {{ template_data.jobSeeker.endYear }}
           {% endif %}
         </div>
-      {% endif %}
-
-      <div class="fw-light">
-        {{ template_data.jobSeeker.education.name }}
-      </div>
-      <div class="text-body-secondary">
-        {{ template_data.jobSeeker.startYear }} - {{ template_data.jobSeeker.endYear }}
-      </div>
-
-      <div class="mt-4 mb-5">{{ template_data.jobSeeker.headline }}</div>
-
-      <h4>Work Experience</h4>
-      <hr />
-      <p>{{ template_data.experiences|linebreaks }}</p>
-
-
-      {% if not template_data.jobSeeker.hide_headline %}
-        <div class="mt-3">{{ template_data.jobSeeker.headline }}</div>
+      {% else %}
+        No education listed.
       {% endif %}
 
       <h4 class="mt-5">Work Experience</h4>

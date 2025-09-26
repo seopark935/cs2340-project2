@@ -21,15 +21,16 @@ class JobSeeker(models.Model):
     image     = models.ImageField("Profile Image", upload_to='jobSeeker_images/', null=True, blank=True)
 
     # education
-    education = models.ForeignKey("Institution", on_delete=models.PROTECT, related_name="jobSeekers", null=True, blank=True)
+    education = models.ForeignKey("Institution", on_delete=models.PROTECT, related_name="jobSeeker", null=True, blank=True)
     degree    = models.CharField(max_length=255, blank=True)
     startYear = models.IntegerField("Start Year", null=True, blank=True)
     endYear   = models.IntegerField("End Year", null=True, blank=True)
 
     # professional
     headline   = models.TextField(blank=True)
-    experience = models.ManyToManyField("Experience", related_name="jobSeekers", blank=True)
-    skills     = models.ManyToManyField("Skill", related_name="jobSeekers", blank=True)
+    experience = models.ManyToManyField("Experience", related_name="jobSeeker", blank=True)
+    skills     = models.ManyToManyField("Skill", related_name="jobSeeker", blank=True)
+    links      = models.ManyToManyField("Link", related_name="jobSeeker", blank=True)
 
     #privacy
     hide_image = models.BooleanField(default=False)
@@ -64,5 +65,4 @@ class Experience(models.Model):
 
 class Link(models.Model):
     url        = models.URLField()
-    jobSeeker  = models.ForeignKey("JobSeeker", on_delete=models.CASCADE, related_name="links")
     def __str__(self): return self.url
