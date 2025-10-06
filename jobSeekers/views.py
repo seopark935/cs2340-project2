@@ -10,6 +10,22 @@ from django.db.models import Q, Count
 from django.urls import reverse
 from urllib.parse import urlencode
 
+def build_jobseeker_qs(name="", location="", skill="", experience=""):
+    qs = JobSeeker.objects.filter(hide_profile=False)
+    if name:
+        qs = qs.filter(
+            Q(firstName__icontains=name) |
+            Q(lastName__icontains=name) |
+            Q(headline__icontains=name)
+        )
+    if location:
+        qs = qs.filter(location__icontains=location)
+    if skill:
+        qs = qs.filter(skills__name__icontains=skill)
+    if experience:
+        qs = qs.filter(experience__name__icontains=experience)
+    return qs.distinct()
+
 @login_required
 @recruiter_required
 def index(request):
@@ -21,26 +37,7 @@ def index(request):
 
 
     # Base querySet (public profiles only)
-    jobSeekers = JobSeeker.objects.filter(hide_profile=False)
-
-    if name_term:
-        jobSeekers = jobSeekers.filter(
-            Q(firstName__icontains=name_term) |
-            Q(lastName__icontains=name_term) |
-            Q(headline__icontains=name_term)
-        )
-
-    if location_term:
-        jobSeekers = jobSeekers.filter(location__icontains=location_term)
-
-    if skill_term:
-        jobSeekers = jobSeekers.filter(skills__name__icontains=skill_term)
-
-    if experience_term:
-        jobSeekers = jobSeekers.filter(experience__name__icontains=experience_term)
-
-    # prevent duplicates when joining skills/projects
-    jobSeekers = jobSeekers.distinct()
+    jobSeekers = build_jobseeker_qs(name_term, location_term, skill_term, experience_term)
     
     candidateSearches = (
         CandidateSearch.objects
@@ -181,16 +178,26 @@ def save_candidate_search(request):
     skill_term = request.GET.get("skill", "")
     experience_term = request.GET.get("experience", "")
 
-    candidateSearch = CandidateSearch()
-    candidateSearch.user = request.user
-    candidateSearch.nameHeadline = name_term
-    candidateSearch.location = location_term
-    candidateSearch.skill = skill_term
-    candidateSearch.experience = experience_term
+    candidateSearch = CandidateSearch.objects.create(
+        user=request.user,
+        nameHeadline=name_term,
+        location=location_term,
+        skill=skill_term,
+        experience=experience_term,
+    )
+    candidateSearch.matches.set(build_jobseeker_qs(name_term, location_term, skill_term, experience_term))
 
     candidateSearch.save()
 
-    return redirect("jobSeekers.refresh_candidate_searches")
+    params = {
+        "name": candidateSearch.nameHeadline or "",
+        "location": candidateSearch.location or "",
+        "skill": candidateSearch.skill or "",
+        "experience": candidateSearch.experience or "",
+    }
+    
+    url = reverse("jobSeekers.index") + "?" + urlencode(params)
+    return redirect(url)
 
 @login_required
 @recruiter_required
@@ -229,25 +236,8 @@ def refresh_candidate_searches(request):
 
 
         # Base querySet (public profiles only)
-        jobSeekers = JobSeeker.objects.filter(hide_profile=False)
-
-        if name_term:
-            jobSeekers = jobSeekers.filter(
-                Q(firstName__icontains=name_term) |
-                Q(lastName__icontains=name_term) |
-                Q(headline__icontains=name_term)
-            )
-
-        if location_term:
-            jobSeekers = jobSeekers.filter(location__icontains=location_term)
-
-        if skill_term:
-            jobSeekers = jobSeekers.filter(skills__name__icontains=skill_term)
-
-        if experience_term:
-            jobSeekers = jobSeekers.filter(experience__name__icontains=experience_term)
+        jobSeekers = build_jobseeker_qs(name_term, location_term, skill_term, experience_term)
         
-        jobSeekers = jobSeekers.distinct()
         cs.matches.set(jobSeekers)
 
         curr_matches = cs.matches.count()
