@@ -1,5 +1,6 @@
 # jobSeekers/views.py
 from django.shortcuts import render, get_object_or_404, redirect
+from django.http import HttpResponseBadRequest
 from django.db.models import Q
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -115,9 +116,13 @@ def add_skill(request):
     if not name:
         return HttpResponseBadRequest("Skill name required.")
 
-    skill = Skill()
-    skill.name = name
-    skill.save()
+    # Reuse any existing skill case-insensitively to avoid UNIQUE constraint errors
+    existing = Skill.objects.filter(name__iexact=name).first()
+    if existing:
+        skill = existing
+    else:
+        skill = Skill.objects.create(name=name)
+
     jobSeeker.skills.add(skill)
     jobSeeker.save()
 

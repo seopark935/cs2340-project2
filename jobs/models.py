@@ -16,6 +16,7 @@ class Job(models.Model):
     salary_min = models.PositiveIntegerField(null=True, blank=True)
     salary_max = models.PositiveIntegerField(null=True, blank=True)
     visa_sponsorship = models.BooleanField(default=False)
+    min_experience = models.PositiveIntegerField(null=True, blank=True)
 
     skills = models.ManyToManyField(Skill, blank=True, related_name="jobs")
 
@@ -27,6 +28,9 @@ class Job(models.Model):
     )
     created_at = models.DateTimeField(auto_now_add=True)
 
+    def __str__(self):
+        return self.title
+
 class Application(models.Model):
     job = models.ForeignKey("jobs.Job", on_delete=models.CASCADE)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
@@ -34,4 +38,6 @@ class Application(models.Model):
     applied_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return self.title
+        job_title = getattr(self.job, "title", "(no title)")
+        username = getattr(self.user, "username", str(self.user_id))
+        return f"Application by {username} for {job_title}"
