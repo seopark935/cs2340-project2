@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+{% block content %}
+{% load static %}
+<div class="p-3">
+  <div class="container">
+    <div class="row mt-3">
+      <div class="col mx-auto mb-3">
+        <h2>List of Job Seekers</h2>
+        <hr />
+        <form method="GET">
+  <div class="row g-2">
+    <div class="col-md-3">
+      <input type="text" class="form-control" name="name"
+             placeholder="Search by name or headline"
+             value="{{ request.GET.name }}">
+    </div>
+    <div class="col-md-3">
+      <input type="text" class="form-control" name="location"
+             placeholder="Search by location"
+             value="{{ request.GET.location }}">
+    </div>
+    <div class="col-md-3">
+      <input type="text" class="form-control" name="skill"
+             placeholder="Search by skill"
+             value="{{ request.GET.skill }}">
+    </div>
+    <div class="col-md-3">
+      <input type="text" class="form-control" name="experience"
+             placeholder="Search by experience"
+             value="{{ request.GET.experience }}">
+    </div>
+  </div>
+  <div class="row mt-2">
+    <div class="col-auto">
+      <button class="btn bg-dark text-white" type="submit">Search</button>
+      <a href="{% url 'jobSeekers.index' %}" class="btn btn-secondary">Clear</a>
+    </div>
+  </div>
+</form>
+
+
+      </div>
+    </div>
+
+    <div class="row">
+      {% for jobSeeker in template_data.jobSeekers %}
+        <div class="col-md-8 col-12 mb-3 ms-md-auto">
+          <div class="card p-3 border-0 shadow">
+            <div class="d-flex gap-3 align-items-start flex-column flex-sm-row align-items-center">
+              
+              <!-- ✅ Safe image check -->
+              {% if not jobSeeker.hide_image and jobSeeker.image %}
+                <img class="avatar flex-shrink-0" src="{{ jobSeeker.image.url }}" 
+                    alt="{{ jobSeeker.full_name }}"
+                    width="128" height="128" loading="lazy">
+              {% else %}
+                <img class="avatar flex-shrink-0" src="{% static 'img/default_profile.jpg' %}" 
+                      alt="No profile image"
+                      width="128" height="128" loading="lazy">
+              {% endif %}
+
+              <div class="flex-grow-1 mt-3">
+                <div class="fw-semibold lh-sm fs-4 text-truncate" style="max-width: 500px;">
+                  {{ jobSeeker.firstName }} {{ jobSeeker.lastName }}
+                </div>
+                <div class="text-body-secondary my-1 lh-sm mb-3 text-truncate" style="max-width: 500px;">
+                  {{ jobSeeker.degree }}
+                </div>
+                {% if not jobSeeker.hide_headline %}     
+                  <div class="text-muted small my-1 lh-sm d-inline-block text-truncate" style="max-width: 500px;">
+                    {{ jobSeeker.headline }}
+                  </div>
+                {% endif %}
+              </div>
+              <a href="{% url 'jobSeekers.show' id=jobSeeker.id %}" class="btn btn-primary ms-auto me-4">
+                Visit Profile
+              </a>
+            </div>
+          </div>
+        </div>
+      {% empty %}
+      <p>No job seekers found.</p>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock content %}

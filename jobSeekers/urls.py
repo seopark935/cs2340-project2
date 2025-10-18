@@ -1,0 +1,16 @@
+from django.urls import path
+from . import views
+urlpatterns = [
+    path('', views.index, name='jobSeekers.index'),
+    path('<int:id>/', views.show, name='jobSeekers.show'),
+    path("me/", views.my_profile, name="jobSeekers.my_profile"), 
+    path("me/edit/", views.edit_profile, name="jobSeekers.edit_profile"),  # ✅ new
+    path("me/add_skill/", views.add_skill, name="jobSeekers.add_skill"),  # ✅ new
+    path("me/add_link/", views.add_link, name="jobSeekers.add_link"),  # ✅ new
+     path("me/add_experience/", views.add_experience, name="jobSeekers.add_experience"),  # ✅ new
+    # path('<int:id>/review/create/', views.create_review, name='movies.create_review'),
+    # path('<int:id>/review/<int:review_id>/edit/', views.edit_review, name='movies.edit_review'),
+    # path('<int:id>/review/<int:review_id>/delete/', views.delete_review, name='movies.delete_review'),
+    # path('<int:id>/review/<int:review_id>/like/', views.like_review, name='movies.like_review'),
+    # path('<int:id>/sort/', views.sort_review, name='movies.sort_review'),
+]

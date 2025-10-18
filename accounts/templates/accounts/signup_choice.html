@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container py-4 text-center">
+  <h2>Sign up</h2>
+  <p>Choose your account type:</p>
+  <a class="btn btn-primary m-2" href="{% url 'signup.jobseeker' %}">Job Seeker</a>
+  <a class="btn btn-secondary m-2" href="{% url 'signup.recruiter' %}">Recruiter</a>
+</div>
+{% endblock %}
