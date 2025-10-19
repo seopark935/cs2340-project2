@@ -1,12 +1,179 @@
 {% extends "base.html" %}
 {% block content %}
+<!-- Leaflet CSS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+
+<style>
+    #map {
+        height: 500px;   
+        width: 100%;
+    }
+</style>
+
 <div class="container py-4">
   <h2>Edit Job: {{ job.title }}</h2>
+
   <form method="post">
     {% csrf_token %}
-    {{ form.as_p }}
+    {{ form.non_field_errors }}
+
+    <!-- Title -->
+    <div class="mb-3">
+      <label class="form-label">Job Title</label>
+      {{ form.title }}
+      {{ form.title.errors }}
+    </div>
+
+    <!-- Description -->
+    <div class="mb-3">
+      <label class="form-label">Description</label>
+      {{ form.description }}
+      {{ form.description.errors }}
+    </div>
+
+    <!-- Location -->
+    <div class="mb-3">
+      <label class="form-label">Location</label>
+      {{ form.location }}
+      {{ form.location.errors }}
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label">Address</label>
+      {{ form.address }}
+      {{ form.address.errors }}
+    </div>
+
+     <!-- Hidden fields for latitude and longitude -->
+     <input type="hidden" id="lat" name="lat">
+     <input type="hidden" id="lng" name="lng">
+    <div id="map"></div>
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+    <!-- Your map initialization script -->
+    <script>
+      document.addEventListener("DOMContentLoaded", function() {
+        function updateHiddenFields(lat, lon) {
+          document.getElementById('lat').value = lat;
+          document.getElementById('lng').value = lon;
+      }
+
+      var map = L.map('map');
+      var marker;
+
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '&copy; OpenStreetMap contributors'
+      }).addTo(map);
+
+      var addressInput = document.getElementById('id_address');
+
+      if (addressInput.value) {
+        fetch('https://nominatim.openstreetmap.org/search?format=json&q=' + encodeURIComponent(addressInput.value))
+        .then(res => res.json())
+        .then(data => {
+            if (data.length > 0) {
+                var lat = parseFloat(data[0].lat);
+                var lon = parseFloat(data[0].lon);
+                map.setView([lat, lon], 14);
+                marker = L.marker([lat, lon]).addTo(map);
+                updateHiddenFields(lat, lon);
+            }
+        });
+      }
+
+      addressInput.addEventListener('change', function() {
+          var address = this.value;
+          if (!address) return;
+
+          fetch('https://nominatim.openstreetmap.org/search?format=json&q=' + encodeURIComponent(address))
+              .then(response => response.json())
+              .then(data => {
+                  if (data.length > 0) {
+                      var lat = parseFloat(data[0].lat);
+                      var lon = parseFloat(data[0].lon);
+
+                      map.setView([lat, lon], 14);
+
+                      if (marker) {
+                          marker.setLatLng([lat, lon]);
+                      } else {
+                          marker = L.marker([lat, lon]).addTo(map);
+                      }
+
+                      document.getElementById('lat').value = lat;
+                      document.getElementById('lng').value = lon;
+                  } else {
+                      alert('Address not found. Please enter a more complete address.');
+                  }
+              });
+      });
+
+      
+          map.on('click', function (e) {
+          var lat = e.latlng.lat;
+          var lon = e.latlng.lng;
+
+          if (marker) marker.setLatLng([lat, lon]);
+          else marker = L.marker([lat, lon]).addTo(map);
+
+          updateHiddenFields(lat, lon);
+
+          fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`, {
+              headers: {
+                  'Accept': 'application/json',
+                  'User-Agent': 'CS2340-Project/1.0'
+              }
+          })
+          .then(res => res.json())
+          .then(data => {
+              if (data && data.display_name) {
+                  addressInput.value = data.display_name;
+              } else {
+                  addressInput.value = 'Unknown location';
+              }
+          })
+          .catch(err => console.log('Reverse geocode error:', err));
+        });
+
+      });
+    </script>
+    <!-- Remote type -->
+    <div class="mb-3">
+      <label class="form-label">Remote Type</label>
+      {{ form.remote_type }}
+      {{ form.remote_type.errors }}
+    </div>
+
+    <!-- Salary range -->
+    <div class="row">
+      <div class="col-md-6 mb-3">
+        <label class="form-label">Minimum Salary</label>
+        {{ form.salary_min }}
+        {{ form.salary_min.errors }}
+      </div>
+      <div class="col-md-6 mb-3">
+        <label class="form-label">Maximum Salary</label>
+        {{ form.salary_max }}
+        {{ form.salary_max.errors }}
+      </div>
+    </div>
+
+    <!-- Visa sponsorship -->
+    <div class="mb-3 form-check">
+      {{ form.visa_sponsorship }}
+      <label class="form-check-label">Visa Sponsorship Available</label>
+      {{ form.visa_sponsorship.errors }}
+    </div>
+
+    <!-- Skills -->
+    <div class="mb-3">
+      <label class="form-label">Required Skills</label>
+      {{ form.skills }}
+      {{ form.skills.errors }}
+    </div>
     <button class="btn btn-dark" type="submit">Save Changes</button>
-    <a href="{% url 'jobs.dashboard' %}" class="btn btn-outline-secondary">Cancel</a>
+    <a href="{% url 'jobs.list' %}" class="btn btn-outline-secondary">Cancel</a>
   </form>
 </div>
 {% endblock %}

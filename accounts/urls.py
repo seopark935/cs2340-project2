@@ -5,7 +5,7 @@ urlpatterns = [
     path("signup/", signup_choice, name="signup.choice"),
     path("signup/jobseeker/", jobseeker_signup, name="signup.jobseeker"),
     path("signup/recruiter/", recruiter_signup, name="signup.recruiter"),
-
+    path("map/jobseeker/", recruiter_signup, name="map.index"),
     path("login/", RoleLoginView.as_view(), name="login"),
     path("logout/", logout_view, name="logout"),  # ✅ use custom view
 ]
