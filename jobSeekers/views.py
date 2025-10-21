@@ -93,17 +93,20 @@ def my_profile(request):
     """Allow a job seeker to view their own profile."""
     jobSeeker = get_object_or_404(JobSeeker, user=request.user)  # ✅ safe forward lookup
 
-    job_seeker_skills = jobSeeker.skills.all()
-    applied_jobs = Application.objects.filter(user=request.user).values_list('job_id', flat=True)
+    jobseeker_skills = jobSeeker.skills.all()
+    recommended_jobs = []
 
-    recommended_jobs = (
-        Job.objects
-        .filter(skills__in=job_seeker_skills)
-        .exclude(id__in=applied_jobs)
-        .annotate(matching_skills=Count('skills'))
-        .order_by('-matching_skills', '-created_at')
-        .distinct()[:5]
-    )
+    if jobseeker_skills.exists():
+        recommended_jobs_qs = Job.objects.filter(
+            skills__in=jobseeker_skills
+        ).distinct().prefetch_related('skills').order_by('-created_at')[:5]
+
+        for job in recommended_jobs_qs:
+            # Find the intersection of job skills and jobseeker skills
+            matching_skills = list(set(job.skills.all()) & set(jobseeker_skills))
+            job.matching_skills_names = [skill.name for skill in matching_skills]
+            recommended_jobs.append(job)
+
 
     template_data = {
         "jobSeeker": jobSeeker,

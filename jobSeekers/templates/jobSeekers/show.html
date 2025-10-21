@@ -107,12 +107,21 @@
                 </div>
             </div>
             <p class="card-text mt-2">{{ job.description|truncatewords:30 }}</p>
-            <small class="text-muted">Matching Skills: {{ job.matching_skills }}</small>
-        </div>
-    </div>
-    {% endfor %}
-</div>
-{% endif %}
+            {% if job.matching_skills_names %}
+            <div class="mt-2">
+                <small class="text-muted">Matching Skills:</small>
+                {% for skill_name in job.matching_skills_names %}
+                    <span class="badge bg-success">{{ skill_name }}</span>
+                {% endfor %}
+            </div>
+            {% endif %}
+            </div>
+            </div>
+            {%endfor%}
+            </div>
+            {% else %}
+<p>No recommended jobs for you yet. Add some skills to your profile to get started!</p>
+            {% endif %}
 
     </div>
   </div>
