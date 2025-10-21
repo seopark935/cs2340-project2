@@ -98,6 +98,16 @@ a:hover { opacity: 0.9; }
 .ms-brandbar .navbar-brand,
 .ms-brandbar .navbar-text { color: var(--primary-contrast) !important; }
 .ms-brandbar .nav-link:hover { opacity: 0.9; }
+.ms-brandbar .nav-link { position: relative; transition: color 160ms ease, transform 140ms ease; }
+.ms-brandbar .nav-link::after {
+  content: '';
+  position: absolute; left: 0; right: 0; bottom: -4px;
+  height: 2px; width: 0; margin: 0 auto;
+  background: var(--primary-contrast);
+  transition: width 180ms ease;
+}
+.ms-brandbar .nav-link:hover { transform: translateY(-1px); }
+.ms-brandbar .nav-link:hover::after { width: 100%; }
 .ms-brandbar .btn-outline-light,
 .ms-brandbar .btn-outline-dark {
   color: var(--primary-contrast);
@@ -190,19 +200,27 @@ a:hover { opacity: 0.9; }
 .ms-footer-bottom a { color: var(--primary-contrast); text-decoration: none; }
 .ms-footer-bottom a:hover { opacity: 0.9; }
 
-/* Full gradient page (home) */
-.ms-gradient-page {
-  background: linear-gradient(90deg, var(--brand-blue-1), var(--brand-cyan));
-  min-height: calc(100vh - 0px);
-}
-
-/* Animated gradient option */
-.ms-gradient-animated {
+/* Home: make entire page a single animated blue gradient */
+body.is-home {
+  /* Larger, multi-color animated gradient for home */
   background: linear-gradient(-45deg,
-    var(--brand-blue-1), var(--brand-cyan), var(--brand-mint), var(--brand-pink), var(--brand-peach));
-  background-size: 400% 400%;
-  animation: msGradientMove 18s ease infinite;
+    var(--brand-blue-1), var(--brand-blue-2), var(--brand-cyan), var(--brand-mint), var(--brand-peach), var(--brand-pink), var(--brand-blue-2));
+  background-size: 600% 600%;
+  animation: msGradientMove 28s ease infinite;
+  color: var(--primary-contrast);
 }
+.is-home a { color: var(--primary-contrast); }
+.is-home a:hover { opacity: 0.9; }
+
+/* Make header/footer transparent on home so gradient is continuous */
+.is-home .ms-brandbar,
+.is-home .ms-footer,
+.is-home .ms-footer-bottom {
+  background: transparent !important;
+  border: 0 !important;
+}
+.is-home .navbar { backdrop-filter: none; }
+.is-home .home-hero { min-height: calc(100vh - 0px); }
 
 @keyframes msGradientMove {
   0% { background-position: 0% 50%; }

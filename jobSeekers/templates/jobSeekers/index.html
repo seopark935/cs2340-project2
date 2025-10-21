@@ -51,33 +51,51 @@
       <div class="col-md-4 col-12 mb-3">
         <div class="card p-3 border-0">
           <div class="d-flex align-items-center">
-            <div class="fw-semibold lh-sm fs-4 text-truncate">Candidate Searches</div>
+            <div>
+              <div class="fw-semibold lh-sm fs-5">Candidate Searches</div>
+              <div class="text-muted small">Save filters and revisit matches later</div>
+            </div>
             <a href="{% url 'jobSeekers.refresh_candidate_searches' %}" class="btn btn-link text-secondary ms-auto">Refresh</a>
           </div>
-          
-          {% if not template_data.candidateSearches %}
-            No saved searches.
-          {% endif %}
-          {% for candidateSearch in template_data.candidateSearches %}
-            <div class="card mt-3 shadow">
-              <div>Created on {{ candidateSearch.date }}</div>
-              <div><b>Name or Headline:</b> {{ candidateSearch.nameHeadline }}</div>
-              <div><b>Location:</b> {{ candidateSearch.location }}</div>
-              <div><b>Skill:</b> {{ candidateSearch.skill }}</div>
-              <div><b>Experience:</b> {{ candidateSearch.experience }}</div>
-              <div class="row mt-2">
-                <div class="col-auto">
+
+          <ul class="list-group list-group-flush mt-2">
+            {% for candidateSearch in template_data.candidateSearches %}
+              <li class="list-group-item border-0 shadow-sm rounded mb-3">
+                <div class="d-flex align-items-start">
+                  <div class="flex-grow-1">
+                    <div class="small text-muted">Saved {{ candidateSearch.date }}</div>
+                    <div class="mt-1">
+                      {% if candidateSearch.nameHeadline %}
+                        <span class="badge text-bg-light me-1 mb-1">Name/Headline: {{ candidateSearch.nameHeadline }}</span>
+                      {% endif %}
+                      {% if candidateSearch.location %}
+                        <span class="badge text-bg-light me-1 mb-1">Location: {{ candidateSearch.location }}</span>
+                      {% endif %}
+                      {% if candidateSearch.skill %}
+                        <span class="badge text-bg-light me-1 mb-1">Skill: {{ candidateSearch.skill }}</span>
+                      {% endif %}
+                      {% if candidateSearch.experience %}
+                        <span class="badge text-bg-light me-1 mb-1">Experience: {{ candidateSearch.experience }}</span>
+                      {% endif %}
+                    </div>
+                  </div>
+                  <div class="text-end ms-2">
+                    <span class="badge rounded-pill text-bg-secondary">{{ candidateSearch.matches_count }} matches</span>
+                  </div>
+                </div>
+                <div class="d-flex gap-2 mt-2">
                   {% if candidateSearch.is_current %}
-                  <button class="btn btn-outline-success" disabled>Applied</button>
+                    <button class="btn btn-outline-success" disabled>Applied</button>
                   {% else %}
                     <a href="{% url 'jobSeekers.apply_candidate_search' id=candidateSearch.id %}" class="btn btn-primary">Apply</a>
                   {% endif %}
-                  <a href="{% url 'jobSeekers.delete_candidate_search' id=candidateSearch.id %}" class="btn btn-secondary">Delete</a>
-                  <b>{{ candidateSearch.matches_count }} Matches</b>
+                  <a href="{% url 'jobSeekers.delete_candidate_search' id=candidateSearch.id %}" class="btn btn-outline-secondary">Delete</a>
                 </div>
-              </div>
-            </div>
-          {% endfor %}
+              </li>
+            {% empty %}
+              <li class="list-group-item border-0 text-muted">No saved searches.</li>
+            {% endfor %}
+          </ul>
         </div>
       </div>
 
