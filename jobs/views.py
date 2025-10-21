@@ -8,6 +8,8 @@ from .forms import JobForm
 from .filters import JobFilter
 import requests
 import json 
+from django.http import JsonResponse
+from django.views.decorators.http import require_GET
 
 # List jobs (everyone can see)
 def job_list(request):
@@ -128,3 +130,43 @@ def apply_job(request, job_id):
         messages.success(request, "Your application has been sent!")
         return redirect("jobs.list")
     return redirect("job_list")
+
+@require_GET
+def reverse_geocode(request):
+    lat = request.GET.get('lat')
+    lon = request.GET.get('lon')
+
+    if not lat or not lon:
+        return JsonResponse({'error': 'Missing lat or lon'}, status=400)
+
+    url = 'https://nominatim.openstreetmap.org/reverse'
+    params = {'format': 'json', 'lat': lat, 'lon': lon}
+    headers = {'User-Agent': 'MyCS2340Project/1.0 (yourname@example.com)'}  # valid User-Agent
+
+    try:
+        r = requests.get(url, params=params, headers=headers, timeout=5)
+        r.raise_for_status()
+        data = r.json()
+        return JsonResponse({'display_name': data.get('display_name', 'Unknown location')})
+    except requests.RequestException:
+        return JsonResponse({'display_name': 'Unknown location'})
+    
+@require_GET
+def forward_geocode(request):
+    address = request.GET.get('q')
+    if not address:
+        return JsonResponse({'error': 'Missing address'}, status=400)
+
+    url = 'https://nominatim.openstreetmap.org/search'
+    params = {'format': 'json', 'q': address}
+    headers = {'User-Agent': 'MyCS2340Project/1.0 (yourname@example.com)'}
+
+    try:
+        r = requests.get(url, params=params, headers=headers, timeout=5)
+        r.raise_for_status()
+        data = r.json()
+        if data:
+            return JsonResponse({'lat': data[0]['lat'], 'lon': data[0]['lon']})
+        return JsonResponse({'error': 'Address not found'}, status=404)
+    except requests.RequestException:
+        return JsonResponse({'error': 'Request failed'}, status=500)
