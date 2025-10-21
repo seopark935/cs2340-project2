@@ -2,6 +2,10 @@
 {% load static %}
 
 {% block content %}
+<!-- Leaflet CSS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+
+
 <div class="container py-4">
   <h2 class="mb-3">Jobs</h2>
 
@@ -30,6 +34,33 @@
           {% endfor %}
         </select>
       </div>
+  <form method="get" id="filterForm" class="row gy-2 gx-3 align-items-end mb-4">
+    <!-- Title -->
+    <div class="col-sm-3">
+      <label class="form-label">Title</label>
+      <input class="form-control" type="text" name="title" value="{{ request.GET.title|default_if_none:'' }}">
+    </div>
+
+    <!-- Location -->
+    <div class="col-sm-3">
+      <label class="form-label">Location</label>
+      <input class="form-control" type="text" id="id_location" name="location" value="{{ request.GET.location|default_if_none:'' }}">
+    </div>
+
+     <!-- Hidden latitude & longitude fields -->
+    <input type="hidden" id="lat" name="lat">
+    <input type="hidden" id="lng" name="lng">
+
+    <!-- Remote type -->
+    <div class="col-sm-2">
+      <label class="form-label">Remote type</label>
+      <select class="form-select" name="remote_type" multiple>
+        {% for val,label in filter.form.remote_type.field.choices %}
+          <option value="{{ val }}" {% if val in selected_remote_types %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      <small class="text-muted">Ctrl/Cmd-click for multi</small>
+    </div>
 
       <!-- Visa sponsorship -->
       <div class="flex-shrink-0">
@@ -61,6 +92,113 @@
       </div>
     </div>
   </form>
+  <!-- Leaflet JS -->
+   <style>
+    #map {
+        height: 500px;  
+        width: 100%;
+    }
+  </style>
+  <div id="map"></div>
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script>
+    var map = L.map('map');
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '&copy; OpenStreetMap contributors'
+      }).addTo(map);
+
+    var userIsAuthenticated = {{ user.is_authenticated|yesno:"true,false" }};
+
+    function updateHiddenFields(lat, lon) {
+        document.getElementById('lat').value = lat;
+        document.getElementById('lng').value = lon;
+    }
+
+    var filterForm = document.getElementById('filterForm');
+    var locationInput = document.getElementById('id_location');
+
+    if (!locationInput.value) {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(function(position) {
+            var lat = position.coords.latitude;
+            var lon = position.coords.longitude;
+            map.setView([lat, lon], 14);
+            updateHiddenFields(lat, lon); 
+        }, function() {
+            map.setView([37.7749, -122.4194], 10);
+        });
+      } else {
+          map.setView([37.7749, -122.4194], 10); //default
+      }
+    } else {
+      map.setView([37.7749, -122.4194], 10); //default
+    }
+    
+    filterForm.addEventListener('submit', function(e) {
+          e.preventDefault(); 
+          var loc = locationInput.value;
+
+          if (!loc) {
+            filterForm.submit();
+            return;
+          }
+
+          fetch('https://nominatim.openstreetmap.org/search?format=json&q=' + encodeURIComponent(loc))
+            .then(response => response.json())
+            .then(data => {
+              if (data.length > 0) {
+                var lat = parseFloat(data[0].lat);
+                var lon = parseFloat(data[0].lon);
+
+                // Update hidden fields
+                updateHiddenFields(lat, lon);
+                // Move map to that location for instant feedback
+                map.setView([lat, lon], 13);
+
+                // Now submit form after updating fields
+                setTimeout(() => filterForm.submit(), 300);
+              } else {
+                alert('Location not found. Please try a more complete address.');
+              }
+            })
+            .catch(err => {
+              console.error('Geocoding error:', err);
+              filterForm.submit(); 
+            });
+        });
+    
+    // Declare jobsData correctly
+  var jobsData = {{ jobs_json|safe }};
+  var appliedData = {{ applied_jobs |safe }};
+
+  jobsData.forEach(function(job) {
+      var isApplied = appliedData.includes(job.id);
+
+      var popupContent = `
+        <div>
+          <b>${job.title}</b><br>
+          <div class="text-muted mb-1">
+            ${job.location} • ${job.remote_type}
+            ${job.visa ? ' • Visa Sponsorship' : ''}
+            ${job.salary_min || job.salary_max ? ` • $${job.salary_min || '?'}–${job.salary_max || '?'}` : ''}
+          </div>
+          <div class="small text-secondary mb-2">
+            Skills: ${job.skills.length > 0 ? job.skills.map(s => `<span class="badge text-bg-light me-1">${s}</span>`).join('') : '<em>None</em>'}
+          </div>
+          <p class="card-text">${job.description.substring(0, 200)}${job.description.length > 200 ? '...' : ''}</p>
+          ${userIsAuthenticated ? (isApplied
+            ? `<button class="btn btn-secondary" disabled>Pending</button>`
+            : `<button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#applyModal${job.id}">Apply</button>`)
+            : '<p><em>Log in to apply for this job.</em></p>'}
+        </div>
+      `;
+      L.marker([job.lat, job.lng])
+       .addTo(map)
+       .bindPopup(popupContent);
+  });
+
+  </script>
+
 
   <script>
     // Single minimum salary slider for search (syncs to hidden GET field)
@@ -93,6 +231,7 @@
     })();
   </script>
 
+  <h3 class="mb-3">Roles</h3>
   <!-- Job list -->
   {% for job in jobs %}
     <div class="card mb-3">
