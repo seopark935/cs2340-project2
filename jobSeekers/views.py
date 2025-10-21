@@ -137,6 +137,7 @@ def edit_profile(request):
     template_data = {}
     template_data['form'] = form
     template_data['jobSeeker'] = jobSeeker
+    template_data['all_skills'] = list(Skill.objects.all().order_by('name').values_list('name', flat=True))
 
     return render(request, "jobSeekers/edit.html", {"template_data": template_data})
 

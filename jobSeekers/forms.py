@@ -18,6 +18,7 @@ class JobSeekerForm(forms.ModelForm):
             "startYear",
             "endYear",
             "headline",
+            "hide_location",
             "hide_profile",
             "hide_image",
             "hide_headline"
@@ -34,6 +35,7 @@ class JobSeekerForm(forms.ModelForm):
         labels = {
             'hide_image': "Keep your image private",
             'hide_headline': "Keep your headline private",
-            'hide_profile': "Keep profile hidden"
+            'hide_profile': "Keep profile hidden",
+            'hide_location': "Hide your location",
         }
 

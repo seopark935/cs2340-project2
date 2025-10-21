@@ -84,36 +84,42 @@
       <div class="col-md-8 col-12 mb-3">
         {% for jobSeeker in template_data.jobSeekers %}
           <div class="card p-3 border-0 shadow mt-3">
-            <div class="d-flex gap-3 align-items-start flex-column flex-sm-row align-items-center">
+            <div class="d-flex align-items-center gap-3 flex-nowrap w-100">
               
-              {% if not jobSeeker.hide_image and jobSeeker.image %}
-                <img class="flex-shrink-0" src="{{ jobSeeker.image.url }}" alt="{{ jobSeeker.full_name }}"
-                    width="128" height="128" 
-                    style="width:128px;height:128px;border-radius:50%;object-fit:cover;object-position:center;display:block;"
-                    loading="lazy">
-              {% else %}
-                <img class="flex-shrink-0" src="{% static 'img/default_profile.jpg' %}" alt="No profile image"
-                    width="128" height="128"
-                    style="width:128px;height:128px;border-radius:50%;object-fit:cover;object-position:center;display:block;"
-                    loading="lazy">
-              {% endif %}
-
-              <div class="flex-grow-1 mt-3">
-                <div class="fw-semibold lh-sm fs-4 text-truncate" style="max-width: 500px;">
-                  {{ jobSeeker.firstName }} {{ jobSeeker.lastName }}
-                </div>
-                <div class="text-body-secondary my-1 lh-sm mb-3 text-truncate" style="max-width: 500px;">
-                  {{ jobSeeker.degree }}
-                </div>
-                {% if not jobSeeker.hide_headline %}     
-                  <div class="text-muted small my-1 lh-sm d-inline-block text-truncate" style="max-width: 500px;">
-                    {{ jobSeeker.headline }}
-                  </div>
+              <div class="flex-shrink-0">
+                {% if not jobSeeker.hide_image and jobSeeker.image %}
+                  <img class="flex-shrink-0" src="{{ jobSeeker.image.url }}" alt="{{ jobSeeker.full_name }}"
+                      width="128" height="128" 
+                      style="width:128px;height:128px;border-radius:50%;object-fit:cover;object-position:center;display:block;"
+                      loading="lazy">
+                {% else %}
+                  <img class="flex-shrink-0" src="{% static 'img/default_profile.jpg' %}" alt="No profile image"
+                      width="128" height="128"
+                      style="width:128px;height:128px;border-radius:50%;object-fit:cover;object-position:center;display:block;"
+                      loading="lazy">
                 {% endif %}
               </div>
-              <a href="{% url 'jobSeekers.show' id=jobSeeker.id %}" class="btn btn-primary ms-auto me-4">
-                Visit Profile
-              </a>
+
+              <div class="flex-grow-1 min-w-0 overflow-hidden">
+                <div class="mt-2">
+                <div class="fw-semibold lh-sm fs-4 text-truncate">
+                  <span class="d-block text-truncate">{{ jobSeeker.firstName }} {{ jobSeeker.lastName }}</span>
+                </div>
+                <div class="text-body-secondary my-1 lh-sm mb-2">
+                  <span class="d-block text-truncate">{{ jobSeeker.degree }}</span>
+                </div>
+                {% if not jobSeeker.hide_headline %}     
+                  <div class="text-muted small my-1 lh-sm">
+                    <span class="d-block text-truncate">{{ jobSeeker.headline|truncatewords:12 }}</span>
+                  </div>
+                {% endif %}
+                </div>
+              </div>
+              <div class="ms-auto text-nowrap flex-shrink-0 align-self-center">
+                <a href="{% url 'jobSeekers.show' id=jobSeeker.id %}" class="btn btn-primary">
+                  Visit Profile
+                </a>
+              </div>
             </div>
           </div>
         {% empty %}
