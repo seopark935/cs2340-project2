@@ -16,6 +16,7 @@ class JobForm(forms.ModelForm):
             "title",
             "description",
             "location",
+            "address",
             "remote_type",
             "min_experience",
             "salary_min",

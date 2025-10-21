@@ -7,6 +7,8 @@ from .models import Job
 from .forms import JobForm
 from .services.recommendations import recommend_candidates_for_job
 from .filters import JobFilter
+import requests
+import json 
 
 # List jobs (everyone can see)
 def job_list(request):
@@ -16,9 +18,65 @@ def job_list(request):
     applied_jobs = []
     if request.user.is_authenticated and request.user.is_jobseeker:
         applied_jobs = Application.objects.filter(user=request.user).values_list('job_id', flat=True)
+
+    applied_jobs = json.dumps(list(applied_jobs))
+
+
+    location = request.GET.get("location")
+    lat, lon = None, None
+
+    if location:
+        response = requests.get(
+            "https://nominatim.openstreetmap.org/search",
+            params={"format": "json", "q": location},
+            headers={"User-Agent": "job-finder/1.0"}
+        )
+        data = response.json()
+        if data:
+            lat = float(data[0]["lat"])
+            lon = float(data[0]["lon"])
+    
+    jobs_with_coords = []
+    for job in f.qs:
+        if job.address:
+            try:
+                response = requests.get(
+                    "https://nominatim.openstreetmap.org/search",
+                    params={"format": "json", "q": job.address},
+                    headers={"User-Agent": "job-finder/1.0"}
+                )
+                data = response.json()
+                if data:
+                    job.lat = float(data[0]["lat"])
+                    job.lng = float(data[0]["lon"])
+                    jobs_with_coords.append(job)
+            except Exception:
+                continue
+
+    jobs_json = json.dumps([
+        {"title": job.title,
+        "location": job.location,
+        "remote_type": job.get_remote_type_display(),
+        "visa": job.visa_sponsorship,
+        "salary_min": job.salary_min,
+        "salary_max": job.salary_max,
+        "skills": [s.name for s in job.skills.all()],
+        "description": job.description,
+        "id": job.id,
+        "lat": job.lat,
+        "lng": job.lng,
+        }
+
+        for job in jobs_with_coords 
+            if job.lat is not None and job.lng is not None
+    ])
+
     return render(request, "jobs/list.html", {
         "filter": f,
         "jobs": f.qs,
+        "lat": lat,             
+        "lon": lon,
+        "jobs_json": jobs_json,
         "selected_remote_types": selected_remote_types,
         "applied_jobs": applied_jobs,
     })

@@ -11,6 +11,7 @@ class Job(models.Model):
     title = models.CharField(max_length=200, db_index=True)
     description = models.TextField()
     location = models.CharField(max_length=200, db_index=True)
+    address = models.CharField(max_length=200, db_index=True)
     remote_type = models.CharField(max_length=6, choices=RemoteType.choices)
 
     salary_min = models.PositiveIntegerField(null=True, blank=True)
