@@ -15,11 +15,12 @@ def job_list(request):
     qs = Job.objects.all().select_related("created_by").prefetch_related("skills")
     f = JobFilter(request.GET, queryset=qs)
     selected_remote_types = [v for v in request.GET.getlist("remote_type") if v]
-    applied_jobs = []
+    applied_jobs_preprocess = []
     if request.user.is_authenticated and request.user.is_jobseeker:
-        applied_jobs = Application.objects.filter(user=request.user).values_list('job_id', flat=True)
+        applied_jobs_preprocess = Application.objects.filter(user=request.user).values_list('job_id', flat=True)
 
-    applied_jobs = json.dumps(list(applied_jobs))
+    applied_jobs_status = applied_jobs_preprocess
+    applied_jobs = json.dumps(list(applied_jobs_preprocess))
 
 
     location = request.GET.get("location")
@@ -70,7 +71,8 @@ def job_list(request):
         for job in jobs_with_coords 
             if job.lat is not None and job.lng is not None
     ])
-
+    print("Jobs with coords:", jobs_with_coords)
+    print("Jobs JSON:", jobs_json)
     return render(request, "jobs/list.html", {
         "filter": f,
         "jobs": f.qs,
@@ -79,6 +81,7 @@ def job_list(request):
         "jobs_json": jobs_json,
         "selected_remote_types": selected_remote_types,
         "applied_jobs": applied_jobs,
+        "applied_jobs_status": applied_jobs_status,
     })
 
 # Recruiter dashboard (see own jobs only)
