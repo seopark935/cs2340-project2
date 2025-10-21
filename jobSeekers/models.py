@@ -2,7 +2,6 @@
 from django.db import models
 from django.conf import settings  # use settings.AUTH_USER_MODEL
 from django.urls import reverse
-# from django.contrib.auth.models import User
 
 class Skill(models.Model):
     # your admin used `name` earlier; standardize on `name`
@@ -66,3 +65,31 @@ class Experience(models.Model):
 class Link(models.Model):
     url        = models.URLField()
     def __str__(self): return self.url
+
+class CandidateSearch(models.Model):
+    id = models.AutoField(primary_key=True)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,           # maps to the recruiter’s user
+        on_delete=models.CASCADE,
+        related_name="candidate_searches",
+    )
+    nameHeadline = models.CharField("Name or Headline", max_length=255)
+    date = models.DateField(auto_now_add=True)
+    location = models.CharField(max_length=255)
+    skill = models.CharField(max_length=255)
+    experience = models.CharField(max_length=255)
+
+    matches = models.ManyToManyField(JobSeeker, related_name="matched_searches", blank=True)
+
+    def __str__(self): return str(self.id)
+
+
+class Notification(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
+                             related_name="notifications")
+    text = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_read = models.BooleanField(default=False)
+
+    class Meta:
+        indexes = [models.Index(fields=["user", "-created_at"])]

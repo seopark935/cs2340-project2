@@ -8,55 +8,94 @@
         <h2>List of Job Seekers</h2>
         <hr />
         <form method="GET">
-  <div class="row g-2">
-    <div class="col-md-3">
-      <input type="text" class="form-control" name="name"
-             placeholder="Search by name or headline"
-             value="{{ request.GET.name }}">
-    </div>
-    <div class="col-md-3">
-      <input type="text" class="form-control" name="location"
-             placeholder="Search by location"
-             value="{{ request.GET.location }}">
-    </div>
-    <div class="col-md-3">
-      <input type="text" class="form-control" name="skill"
-             placeholder="Search by skill"
-             value="{{ request.GET.skill }}">
-    </div>
-    <div class="col-md-3">
-      <input type="text" class="form-control" name="experience"
-             placeholder="Search by experience"
-             value="{{ request.GET.experience }}">
-    </div>
-  </div>
-  <div class="row mt-2">
-    <div class="col-auto">
-      <button class="btn bg-dark text-white" type="submit">Search</button>
-      <a href="{% url 'jobSeekers.index' %}" class="btn btn-secondary">Clear</a>
-    </div>
-  </div>
-</form>
-
-
+          <div class="row g-2">
+            <div class="col-md-3">
+              <input type="text" class="form-control" name="name"
+                    placeholder="Search by name or headline"
+                    value="{{ request.GET.name }}">
+            </div>
+            <div class="col-md-3">
+              <input type="text" class="form-control" name="location"
+                    placeholder="Search by location"
+                    value="{{ request.GET.location }}">
+            </div>
+            <div class="col-md-3">
+              <input type="text" class="form-control" name="skill"
+                    placeholder="Search by skill"
+                    value="{{ request.GET.skill }}">
+            </div>
+            <div class="col-md-3">
+              <input type="text" class="form-control" name="experience"
+                    placeholder="Search by experience"
+                    value="{{ request.GET.experience }}">
+            </div>
+          </div>
+          <div class="row mt-2">
+            <div class="col-auto">
+              <button class="btn bg-dark text-white" type="submit">Search</button>
+              <a href="{% url 'jobSeekers.index' %}" class="btn btn-secondary">Clear</a>
+              <button
+                class="btn btn-link text-primary"
+                type="submit"
+                formaction="{% url 'jobSeekers.save_candidate_search' %}"
+                formmethod="get">
+                Save Candidate Search
+              </button>   
+            </div>
+          </div>
+        </form>
       </div>
     </div>
 
     <div class="row">
-      {% for jobSeeker in template_data.jobSeekers %}
-        <div class="col-md-8 col-12 mb-3 ms-md-auto">
-          <div class="card p-3 border-0 shadow">
+      <div class="col-md-4 col-12 mb-3">
+        <div class="card p-3 border-0">
+          <div class="d-flex align-items-center">
+            <div class="fw-semibold lh-sm fs-4 text-truncate">Candidate Searches</div>
+            <a href="{% url 'jobSeekers.refresh_candidate_searches' %}" class="btn btn-link text-secondary ms-auto">Refresh</a>
+          </div>
+          
+          {% if not template_data.candidateSearches %}
+            No saved searches.
+          {% endif %}
+          {% for candidateSearch in template_data.candidateSearches %}
+            <div class="card mt-3 shadow">
+              <div>Created on {{ candidateSearch.date }}</div>
+              <div><b>Name or Headline:</b> {{ candidateSearch.nameHeadline }}</div>
+              <div><b>Location:</b> {{ candidateSearch.location }}</div>
+              <div><b>Skill:</b> {{ candidateSearch.skill }}</div>
+              <div><b>Experience:</b> {{ candidateSearch.experience }}</div>
+              <div class="row mt-2">
+                <div class="col-auto">
+                  {% if candidateSearch.is_current %}
+                  <button class="btn btn-outline-success" disabled>Applied</button>
+                  {% else %}
+                    <a href="{% url 'jobSeekers.apply_candidate_search' id=candidateSearch.id %}" class="btn btn-primary">Apply</a>
+                  {% endif %}
+                  <a href="{% url 'jobSeekers.delete_candidate_search' id=candidateSearch.id %}" class="btn btn-secondary">Delete</a>
+                  <b>{{ candidateSearch.matches_count }} Matches</b>
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="col-md-8 col-12 mb-3">
+        {% for jobSeeker in template_data.jobSeekers %}
+          <div class="card p-3 border-0 shadow mt-3">
             <div class="d-flex gap-3 align-items-start flex-column flex-sm-row align-items-center">
               
-              <!-- ✅ Safe image check -->
               {% if not jobSeeker.hide_image and jobSeeker.image %}
-                <img class="avatar flex-shrink-0" src="{{ jobSeeker.image.url }}" 
-                    alt="{{ jobSeeker.full_name }}"
-                    width="128" height="128" loading="lazy">
+                <img class="flex-shrink-0" src="{{ jobSeeker.image.url }}" alt="{{ jobSeeker.full_name }}"
+                    width="128" height="128" 
+                    style="width:128px;height:128px;border-radius:50%;object-fit:cover;object-position:center;display:block;"
+                    loading="lazy">
               {% else %}
-                <img class="avatar flex-shrink-0" src="{% static 'img/default_profile.jpg' %}" 
-                      alt="No profile image"
-                      width="128" height="128" loading="lazy">
+                <img class="flex-shrink-0" src="{% static 'img/default_profile.jpg' %}" alt="No profile image"
+                    width="128" height="128"
+                    style="width:128px;height:128px;border-radius:50%;object-fit:cover;object-position:center;display:block;"
+                    loading="lazy">
               {% endif %}
 
               <div class="flex-grow-1 mt-3">
@@ -77,10 +116,10 @@
               </a>
             </div>
           </div>
-        </div>
-      {% empty %}
-      <p>No job seekers found.</p>
-      {% endfor %}
+        {% empty %}
+       <p>No job seekers found.</p>
+        {% endfor %}
+      </div>
     </div>
   </div>
 </div>

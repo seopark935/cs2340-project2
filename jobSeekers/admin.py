@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import JobSeeker, Institution, Experience, Skill, Link
+from .models import JobSeeker, Institution, Experience, Skill, Link, CandidateSearch
 
 class JobSeekerAdmin(admin.ModelAdmin):
     search_fields = ['firstName', 'lastName', 'headline']
@@ -18,8 +18,12 @@ class SkillAdmin(admin.ModelAdmin):
 class LinkAdmin(admin.ModelAdmin):
     search_fields = ['name']
 
+class CandidateSearchAdmin(admin.ModelAdmin):
+    search_fields = ['user']
+
 admin.site.register(JobSeeker, JobSeekerAdmin)
 admin.site.register(Institution, InstitutionAdmin)
 admin.site.register(Experience, ExperienceAdmin)
 admin.site.register(Skill, SkillAdmin)
 admin.site.register(Link, LinkAdmin)
+admin.site.register(CandidateSearch, CandidateSearchAdmin)
