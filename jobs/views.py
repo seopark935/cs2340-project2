@@ -5,6 +5,7 @@ from django.contrib import messages
 from .models import Job, Application
 from .models import Job
 from .forms import JobForm
+from .services.recommendations import recommend_candidates_for_job
 from .filters import JobFilter
 
 # List jobs (everyone can see)
@@ -141,3 +142,99 @@ def update_status(request, application_id):
         else:
             messages.error(request, "Invalid status selected.")
         return redirect('job_applications', job_id=application.job.id)
+
+
+# Show candidate recommendations for a job (recruiter-owned only)
+@login_required
+@recruiter_required
+def job_recommendations(request, pk):
+    job = get_object_or_404(Job, pk=pk, created_by=request.user)
+    candidates = recommend_candidates_for_job(job)
+    return render(request, "jobs/recommendations.html", {"job": job, "candidates": candidates})
+
+
+# Debug view to explain inclusion/exclusion reasons per candidate
+@login_required
+@recruiter_required
+def job_recommendations_debug(request, pk):
+    job = get_object_or_404(Job, pk=pk, created_by=request.user)
+
+    from django.db.models import Q, Count, IntegerField, Value
+    from jobSeekers.models import JobSeeker
+
+    job_skill_ids = list(job.skills.values_list('id', flat=True))
+    job_min = job.salary_min
+    job_max = job.salary_max
+
+    # Base candidates: only non-hidden profiles for privacy (may include not-open-to-work to show reason)
+    qs = JobSeeker.objects.filter(hide_profile=False).prefetch_related('skills')
+    if job_skill_ids:
+        qs = qs.annotate(skill_overlap=Count('skills', filter=Q(skills__in=job_skill_ids), distinct=True))
+    else:
+        qs = qs.annotate(skill_overlap=Value(0, output_field=IntegerField()))
+
+    data = []
+
+    # Prepare location token (soft factor only; no longer excludes)
+    remote = getattr(job, 'remote_type', None) == getattr(job.RemoteType, 'REMOTE', 'REMOTE')
+    city = (job.location or '').split(',')[0].strip() if job.location else ''
+    token = city or (job.location or '')
+
+    min_exp = job.min_experience or 0
+
+    for c in qs:
+        reasons = []
+
+        # open_to_work
+        open_ok = bool(c.open_to_work)
+        if not open_ok:
+            reasons.append('Not open to work')
+
+        # location check (soft): influences score but no longer excludes
+        if remote:
+            loc_ok = True
+        else:
+            if token:
+                loc_ok = (c.location or '').lower().find(token.lower()) != -1
+            else:
+                loc_ok = True
+        # Keep note but do not exclude candidates for location
+        if not loc_ok:
+            reasons.append('Location mismatch (soft)')
+
+        # salary overlap
+        if job_min is None and job_max is None:
+            sal_ok = True
+        else:
+            c_min = c.desired_salary_min
+            c_max = c.desired_salary_max
+            sal_ok_left = (job_max is None) or (c_min is None) or (c_min <= job_max)
+            sal_ok_right = (job_min is None) or (c_max is None) or (c_max >= job_min)
+            sal_ok = sal_ok_left and sal_ok_right
+        if not sal_ok:
+            reasons.append('Salary range does not overlap')
+
+        # experience meets
+        exp_ok = (c.years_experience or 0) >= min_exp
+
+        total_score = (getattr(c, 'skill_overlap', 0) * 100) + (10 if exp_ok else 0)
+
+        # Inclusion no longer depends on location
+        included = open_ok and sal_ok
+
+        data.append({
+            'candidate': c,
+            'open_ok': open_ok,
+            'loc_ok': loc_ok,
+            'sal_ok': sal_ok,
+            'skill_overlap': getattr(c, 'skill_overlap', 0),
+            'exp_ok': exp_ok,
+            'score': total_score,
+            'included': included,
+            'reasons': reasons,
+        })
+
+    # Sort primarily by included desc, then score desc
+    data.sort(key=lambda x: (x['included'], x['score']), reverse=True)
+
+    return render(request, "jobs/recommendations_debug.html", {"job": job, "rows": data})

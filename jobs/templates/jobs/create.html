@@ -35,6 +35,13 @@
       {{ form.remote_type.errors }}
     </div>
 
+    <!-- Minimum Experience -->
+    <div class="mb-3">
+      <label class="form-label">Minimum Experience (years)</label>
+      {{ form.min_experience }}
+      {{ form.min_experience.errors }}
+    </div>
+
     <!-- Salary range -->
     <div class="row">
       <div class="col-md-6 mb-3">
@@ -61,6 +68,14 @@
       <label class="form-label">Required Skills</label>
       {{ form.skills }}
       {{ form.skills.errors }}
+    </div>
+
+    <!-- New skills (create on-the-fly) -->
+    <div class="mb-3">
+      <label class="form-label">Add New Skills (comma-separated)</label>
+      {{ form.new_skills }}
+      <div class="form-text">{{ form.new_skills.help_text }}</div>
+      {{ form.new_skills.errors }}
     </div>
 
     <button class="btn btn-dark" type="submit">Create Job</button>

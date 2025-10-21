@@ -9,6 +9,10 @@ class JobSeekerForm(forms.ModelForm):
             "lastName",
             "location",
             "image",
+            "years_experience",
+            "open_to_work",
+            "desired_salary_min",
+            "desired_salary_max",
             "education",
             "degree",
             "startYear",
@@ -20,6 +24,7 @@ class JobSeekerForm(forms.ModelForm):
         ]
         widgets = {
             "headline": forms.Textarea(attrs={"rows": 3}),
+            'open_to_work': forms.CheckboxInput(),
             'hide_location': forms.CheckboxInput(),
             'hide_image': forms.CheckboxInput(),
             'hide_headline': forms.CheckboxInput(),

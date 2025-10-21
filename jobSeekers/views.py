@@ -149,9 +149,13 @@ def add_skill(request):
     if not name:
         return HttpResponseBadRequest("Skill name required.")
 
-    skill = Skill()
-    skill.name = name
-    skill.save()
+    # Reuse any existing skill case-insensitively to avoid UNIQUE constraint errors
+    existing = Skill.objects.filter(name__iexact=name).first()
+    if existing:
+        skill = existing
+    else:
+        skill = Skill.objects.create(name=name)
+
     jobSeeker.skills.add(skill)
     jobSeeker.save()
 

@@ -19,6 +19,12 @@ class JobSeeker(models.Model):
     location  = models.CharField("Location", max_length=255, blank=True)
     image     = models.ImageField("Profile Image", upload_to='jobSeeker_images/', null=True, blank=True)
 
+    # matching-related fields
+    years_experience = models.PositiveIntegerField(null=True, blank=True)
+    open_to_work = models.BooleanField(default=True)
+    desired_salary_min = models.PositiveIntegerField(null=True, blank=True)
+    desired_salary_max = models.PositiveIntegerField(null=True, blank=True)
+
     # education
     education = models.ForeignKey("Institution", on_delete=models.PROTECT, related_name="jobSeeker", null=True, blank=True)
     degree    = models.CharField(max_length=255, blank=True)
@@ -69,7 +75,7 @@ class Link(models.Model):
 class CandidateSearch(models.Model):
     id = models.AutoField(primary_key=True)
     user = models.ForeignKey(
-        settings.AUTH_USER_MODEL,           # maps to the recruiter’s user
+        settings.AUTH_USER_MODEL,           # maps to the recruiter's user
         on_delete=models.CASCADE,
         related_name="candidate_searches",
     )

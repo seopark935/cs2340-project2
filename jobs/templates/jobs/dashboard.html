@@ -11,6 +11,7 @@
         <p class="card-text text-muted">{{ job.location }} • {{ job.get_remote_type_display }}</p>
         <a href="{% url 'job_applications' job.id %}" class="btn btn-outline-primary">Review Applications</a>
         <a href="{% url 'jobs.edit' job.pk %}" class="btn btn-outline-primary">Edit</a>
+        <a href="{% url 'jobs.recommendations' job.pk %}" class="btn btn-dark ms-2">Recommendations</a>
       </div>
     </div>
   {% empty %}
