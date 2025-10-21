@@ -26,6 +26,10 @@ def build_jobseeker_qs(name="", location="", skill="", experience=""):
         qs = qs.filter(experience__name__icontains=experience)
     return qs.distinct()
 
+def _norm(s):
+    # normalize: None -> "", strip spaces, lowercase
+    return (s or "").strip().lower()
+
 @login_required
 @recruiter_required
 def index(request):
@@ -45,6 +49,15 @@ def index(request):
         .annotate(matches_count=Count("matches", distinct=True))
         .prefetch_related("matches")  # optional if you also list them
     )
+
+    # attach a flag to each search indicating if it matches the current filters
+    for cs in candidateSearches:
+        cs.is_current = (
+            _norm(cs.nameHeadline) == name_term and
+            _norm(cs.location)     == location_term and
+            _norm(cs.skill)        == skill_term and
+            _norm(cs.experience)   == experience_term
+        )
 
     template_data = {
         "title": "Job Seekers",
@@ -178,6 +191,26 @@ def save_candidate_search(request):
     skill_term = request.GET.get("skill", "")
     experience_term = request.GET.get("experience", "")
 
+    if (name_term == "" and location_term == "" and skill_term == "" and experience_term == ""):
+        return redirect("jobSeekers.index")
+    
+    # case-insensitive duplicate check for this user
+    existing = (
+        CandidateSearch.objects
+        .filter(user=request.user)
+        .filter(
+            Q(nameHeadline__iexact=name_term) &
+            Q(location__iexact=location_term) &
+            Q(skill__iexact=skill_term) &
+            Q(experience__iexact=experience_term)
+        )
+        .first()
+    )
+
+    if (existing):
+        messages.error(request, "This search is already saved.")
+        return redirect("jobSeekers.index")
+    
     candidateSearch = CandidateSearch.objects.create(
         user=request.user,
         nameHeadline=name_term,
@@ -234,7 +267,6 @@ def refresh_candidate_searches(request):
         skill_term = cs.skill
         experience_term = cs.experience
 
-
         # Base querySet (public profiles only)
         jobSeekers = build_jobseeker_qs(name_term, location_term, skill_term, experience_term)
         
@@ -242,6 +274,6 @@ def refresh_candidate_searches(request):
 
         curr_matches = cs.matches.count()
         if (curr_matches > prev_matches):
-            messages.success(request, f"{curr_matches - prev_matches} New Matches!")
+            messages.success(request, f"{curr_matches - prev_matches} New Matches!") # notify new matches
 
     return redirect("jobSeekers.index")

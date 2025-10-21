@@ -7,8 +7,9 @@
 
       <div class="col-md-6 mx-auto mb-3 text-center">
 
+        {% load static %}
         {% if template_data.jobSeeker.image and not template_data.jobSeeker.hide_image %}
-          <img src="{{ template_data.jobSeeker.image.url }}" class="avatar-big" alt="{{ template_data.name }}">
+          <img src="{{ template_data.jobSeeker.image.url }}" style="width:300px;height:300px;border-radius:50%;object-fit:cover;object-position:center;display:block;"alt="{{ template_data.name }}">
         {% else %}
           <img src="{% static 'img/default_profile.jpg' %}" class="avatar-big" alt="No profile image">
         {% endif %}
