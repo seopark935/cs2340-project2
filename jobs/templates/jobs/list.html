@@ -201,10 +201,11 @@
         <p class="card-text">{{ job.description|truncatewords:40 }}</p>
            <!-- Apply button -->
         {% if user.is_authenticated %}
+        {% if user.is_jobseeker %}
            {% if job.id in applied_jobs %}
-           <button type="button" class="btn btn-secondary" disabled>
-               Pending
-           </button>
+           <a href="{% url 'application_status' job.id %}" class="btn btn-primary">
+            Check Status
+        </a>
           {% else %}
            <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#applyModal{{ job.id }}">
                Apply
@@ -234,9 +235,13 @@
               </div>
             </div>
           </div>
+          {% else %}
+          <p><em>Log in as Job Seeker to apply</em></p>
+          {% endif %}
          {% else %}
            <p><em>Log in to apply for this job.</em></p>
          {% endif %}
+         
       </div>
        
     

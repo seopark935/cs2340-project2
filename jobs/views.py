@@ -1,10 +1,11 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from accounts.decorators import recruiter_required
+from accounts.decorators import recruiter_required, jobseeker_required
 from django.contrib import messages
 from .models import Job, Application
 from .models import Job
 from .forms import JobForm
+from .services.recommendations import recommend_candidates_for_job
 from .filters import JobFilter
 import requests
 import json 
@@ -17,7 +18,7 @@ def job_list(request):
     f = JobFilter(request.GET, queryset=qs)
     selected_remote_types = request.GET.getlist("remote_type")
     applied_jobs = []
-    if request.user.is_authenticated:
+    if request.user.is_authenticated and request.user.is_jobseeker:
         applied_jobs = Application.objects.filter(user=request.user).values_list('job_id', flat=True)
 
     applied_jobs = json.dumps(list(applied_jobs))
@@ -86,8 +87,13 @@ def job_list(request):
 @login_required
 @recruiter_required
 def job_dashboard(request):
-    jobs = Job.objects.filter(created_by=request.user)
-    return render(request, "jobs/dashboard.html", {"jobs": jobs})
+    if request.user.is_recruiter:
+        jobs = Job.objects.filter(created_by=request.user)
+        applications = Application.objects.filter(job__in=jobs)
+        return render(request, 'jobs/dashboard.html', {'jobs': jobs, 'applications': applications})
+    else:
+        return redirect('jobs.list')
+  
 
 # Create new job
 @login_required
@@ -120,16 +126,30 @@ def job_edit(request, pk):
 
     return render(request, "jobs/edit.html", {"form": form, "job": job})
 
-
+#Apply Job 
 @login_required
+@jobseeker_required
 def apply_job(request, job_id):
     job = get_object_or_404(Job, id=job_id)
+    existing = Application.objects.filter(job=job, user=request.user).exists()
+    if existing:
+        messages.info(request, "You’ve already applied for this job.")
+        return redirect("jobs.list")
+    # Only process POST requests
     if request.method == "POST":
         message = request.POST.get("message")
-        Application.objects.create(job=job, user=request.user, message=message)
+
+        # Create the application with default Applied status
+        Application.objects.create(
+            job=job,
+            user=request.user,
+            message=message,
+            status=Application.Status.APPLIED  # <- new
+        )
+
         messages.success(request, "Your application has been sent!")
         return redirect("jobs.list")
-    return redirect("job_list")
+
 
 @require_GET
 def reverse_geocode(request):

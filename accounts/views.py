@@ -1,13 +1,15 @@
 # accounts/views.py
 
 from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login
 from django.urls import reverse
 from django.contrib.auth.views import LoginView
 from django.contrib.auth import logout
 
-from .forms import JobSeekerSignUpForm, RecruiterSignUpForm
-from .models import User
+from .forms import JobSeekerSignUpForm, RecruiterSignUpForm, RecommendationPriorityForm
+from .models import User, RecruiterProfile
+from .decorators import recruiter_required
 
 
 # ---------- Helpers ----------
@@ -65,3 +67,22 @@ def logout_view(request):
     """Logs out user via GET and redirects home."""
     logout(request)
     return redirect("home.index")  # send them back to home
+
+
+# ---------- Recruiter Settings ----------
+@login_required
+@recruiter_required
+def recommendation_settings(request):
+    profile, _ = RecruiterProfile.objects.get_or_create(user=request.user, defaults={
+        "company_name": getattr(request.user, "username", "")
+    })
+
+    if request.method == "POST":
+        form = RecommendationPriorityForm(request.POST, instance=profile)
+        if form.is_valid():
+            form.save()
+            return redirect("jobs.dashboard")
+    else:
+        form = RecommendationPriorityForm(instance=profile)
+
+    return render(request, "accounts/recommendation_settings.html", {"form": form})
