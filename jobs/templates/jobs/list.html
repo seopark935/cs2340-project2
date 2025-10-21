@@ -9,8 +9,8 @@
 <div class="container py-4">
   <h2 class="mb-3">Jobs</h2>
 
-  <!-- Filter form -->
-  <form method="get" class="mb-4">
+  <!-- Filter form (legacy block hidden after merge) -->
+  <div class="mb-4 d-none">
     <div class="d-flex flex-wrap align-items-end gap-3 pb-2">
       <!-- Title -->
       <div class="flex-shrink-0">
@@ -61,6 +61,30 @@
       </select>
       <small class="text-muted">Ctrl/Cmd-click for multi</small>
     </div>
+    
+    <!-- Visa sponsorship -->
+    <div class="col-sm-2">
+      <label class="form-label">Visa sponsorship</label>
+      <select class="form-select" name="visa_sponsorship">
+        <option value="">Any</option>
+        <option value="true"  {% if request.GET.visa_sponsorship == 'true' %}selected{% endif %}>Yes</option>
+        <option value="false" {% if request.GET.visa_sponsorship == 'false' %}selected{% endif %}>No</option>
+      </select>
+    </div>
+
+    <!-- Minimum salary slider (0 - 500k+, 50k steps) -->
+    <div class="col-sm-3">
+      <label class="form-label">Minimum salary</label>
+      <input type="hidden" name="salary_min" id="salaryMinHidden" value="{{ request.GET.salary_min|default_if_none:'' }}">
+      <input id="salaryMinRangeSearch" type="range" class="form-range" min="0" max="500000" step="50000">
+      <div class="small text-muted" id="salaryRangeDisplaySearch"></div>
+    </div>
+
+    <!-- Submit -->
+    <div class="col-auto">
+      <button class="btn btn-dark">Filter</button>
+      <a href="{% url 'jobs.list' %}" class="btn btn-outline-secondary">Clear</a>
+    </div>
 
       <!-- Visa sponsorship -->
       <div class="flex-shrink-0">
@@ -91,7 +115,7 @@
         <a href="{% url 'jobs.list' %}" class="btn btn-outline-secondary">Clear</a>
       </div>
     </div>
-  </form>
+  </div>
   <!-- Leaflet JS -->
    <style>
     #map {
