@@ -202,13 +202,19 @@ a:hover { opacity: 0.9; }
 
 /* Home: make entire page a single animated blue gradient */
 body.is-home {
+  /* Fallback solid color for very old browsers */
+  background: #99C3EC;
   /* Larger, multi-color animated gradient for home */
   background: linear-gradient(-45deg,
     var(--brand-blue-1), var(--brand-blue-2), var(--brand-cyan), var(--brand-mint), var(--brand-peach), var(--brand-pink), var(--brand-blue-2));
   background-size: 600% 600%;
   animation: msGradientMove 28s ease infinite;
-  color: var(--primary-contrast);
+  /* Force high-contrast text on colorful gradient */
+  color: #ffffff;
 }
+.is-home a, .is-home .navbar .nav-link, .is-home .navbar .navbar-brand, .is-home .ms-footer-bottom span { color: #ffffff !important; }
+.is-home .btn-outline-primary { color: #ffffff; border-color: rgba(255,255,255,0.7); }
+.is-home .btn-outline-primary:hover { background: rgba(255,255,255,0.1); }
 .is-home a { color: var(--primary-contrast); }
 .is-home a:hover { opacity: 0.9; }
 
@@ -220,6 +226,11 @@ body.is-home {
   border: 0 !important;
 }
 .is-home .navbar { backdrop-filter: none; }
+
+/* Respect reduced-motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  body.is-home { animation: none; }
+}
 .is-home .home-hero { min-height: calc(100vh - 0px); }
 
 @keyframes msGradientMove {
