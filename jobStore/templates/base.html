@@ -13,13 +13,13 @@
     <link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
   </head>
-  <body class="d-flex flex-column min-vh-100">
+  <body class="d-flex flex-column min-vh-100{% if request.resolver_match and request.resolver_match.url_name == 'home.index' %} is-home{% endif %}">
     <!-- Header -->
-    <nav class="p-3 navbar navbar-dark bg-dark navbar-expand-lg">
+    <nav class="p-3 navbar navbar-light ms-brandbar navbar-expand-lg">
       <div class="container">
         <!-- Brand / Logo -->
         <a class="navbar-brand" href="{% url 'home.index' %}">
-          <img src="{% static 'img/logo.png' %}" alt="logo" height="40" />
+          <img src="{% static 'img/logo.png' %}?v={{ STATIC_REV_LOGO }}" alt="logo" height="40" />
         </a>
 
         <!-- Mobile toggle -->
@@ -34,7 +34,7 @@
 
         <!-- Links -->
         <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
-          <div class="navbar-nav ms-auto navbar-ml">
+          <div class="navbar-nav ms-auto navbar-ml align-items-lg-center">
 
             <!-- Always visible -->
             <a class="nav-link" href="{% url 'jobs.list' %}">Jobs</a>
@@ -60,6 +60,7 @@
               <a class="nav-link" href="{% url 'login' %}">Log in</a>
               <a class="nav-link" href="{% url 'signup.choice' %}">Sign up</a>
             {% endif %}
+
           </div>
         </div>
       </div>
@@ -73,34 +74,9 @@
     </div>
 
     <!-- Footer -->
-    <section class="p-3 ms-footer d-none d-md-block mt-auto py-3 border-top">
-      <div class="container">
-        <div class="row mt-3 text-white">
-          <div class="col-md-6 col-lg-6 col-xl-6 mx-auto mb-4">
-            <b>Job Viewer</b>
-            <hr />
-            <p>
-              Welcome to Job Viewer, your hub to connect recruiters with job seekers.  
-              Explore opportunities, post openings, and find your next career move.
-            </p>
-          </div>
-          <div class="col-md-3 col-lg-3 col-xl-3 mx-auto mb-4">
-            <b>LINKS</b>
-            <hr />
-            <p><a class="nav-link" href="{% url 'home.about' %}">About</a></p>
-          </div>
-          <div class="col-md-3 col-lg-3 col-xl-3 mx-auto mb-4">
-            <b>CONTACT</b>
-            <hr />
-            <p><i class="fas fa-home me-2"></i> 150-2345 Tokyo-to, Japan</p>
-            <p><i class="fas fa-envelope me-2"></i> info@jobviewer.com</p>
-            <p><i class="fas fa-phone me-2"></i> +81 03-3333-3333</p>
-          </div>
-        </div>
-      </div>
-    </section>
+    
 
-    <section class="p-3 ms-footer-bottom bg-dark">
+    <section class="p-3 ms-footer-bottom">
       <div class="container d-flex justify-content-between">
         <div class="me-5 text-white">
           <span>DESIGNED BY
