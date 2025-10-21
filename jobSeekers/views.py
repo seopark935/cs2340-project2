@@ -9,6 +9,7 @@ from .forms import JobSeekerForm
 from django.db.models import Q, Count
 from django.urls import reverse
 from urllib.parse import urlencode
+from jobs.models import Job, Application
 
 def build_jobseeker_qs(name="", location="", skill="", experience=""):
     qs = JobSeeker.objects.filter(hide_profile=False)
@@ -42,7 +43,7 @@ def index(request):
 
     # Base querySet (public profiles only)
     jobSeekers = build_jobseeker_qs(name_term, location_term, skill_term, experience_term)
-    
+
     candidateSearches = (
         CandidateSearch.objects
         .filter(user=request.user)
@@ -92,12 +93,25 @@ def my_profile(request):
     """Allow a job seeker to view their own profile."""
     jobSeeker = get_object_or_404(JobSeeker, user=request.user)  # ✅ safe forward lookup
 
+    job_seeker_skills = jobSeeker.skills.all()
+    applied_jobs = Application.objects.filter(user=request.user).values_list('job_id', flat=True)
+
+    recommended_jobs = (
+        Job.objects
+        .filter(skills__in=job_seeker_skills)
+        .exclude(id__in=applied_jobs)
+        .annotate(matching_skills=Count('skills'))
+        .order_by('-matching_skills', '-created_at')
+        .distinct()[:5]
+    )
+
     template_data = {
         "jobSeeker": jobSeeker,
         "name": f"{jobSeeker.firstName} {jobSeeker.lastName}",
         "experiences": jobSeeker.experience.all(),
         "skills": jobSeeker.skills.all(),
         "links": jobSeeker.links.all(),
+        "recommended_jobs": recommended_jobs,
     }
     return render(request, "jobSeekers/show.html", {"template_data": template_data})
 
@@ -116,7 +130,7 @@ def edit_profile(request):
             return redirect("jobSeekers.my_profile")
     else:
         form = JobSeekerForm(instance=jobSeeker)
-    
+
     template_data = {}
     template_data['form'] = form
     template_data['jobSeeker'] = jobSeeker
@@ -193,7 +207,7 @@ def save_candidate_search(request):
 
     if (name_term == "" and location_term == "" and skill_term == "" and experience_term == ""):
         return redirect("jobSeekers.index")
-    
+
     # case-insensitive duplicate check for this user
     existing = (
         CandidateSearch.objects
@@ -210,7 +224,7 @@ def save_candidate_search(request):
     if (existing):
         messages.error(request, "This search is already saved.")
         return redirect("jobSeekers.index")
-    
+
     candidateSearch = CandidateSearch.objects.create(
         user=request.user,
         nameHeadline=name_term,
@@ -228,7 +242,7 @@ def save_candidate_search(request):
         "skill": candidateSearch.skill or "",
         "experience": candidateSearch.experience or "",
     }
-    
+
     url = reverse("jobSeekers.index") + "?" + urlencode(params)
     return redirect(url)
 
@@ -243,7 +257,7 @@ def apply_candidate_search(request, id):
         "skill": candidateSearch.skill or "",
         "experience": candidateSearch.experience or "",
     }
-    
+
     url = reverse("jobSeekers.index") + "?" + urlencode(params)
     return redirect(url)
 
@@ -269,7 +283,7 @@ def refresh_candidate_searches(request):
 
         # Base querySet (public profiles only)
         jobSeekers = build_jobseeker_qs(name_term, location_term, skill_term, experience_term)
-        
+
         cs.matches.set(jobSeekers)
 
         curr_matches = cs.matches.count()
