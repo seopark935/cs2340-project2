@@ -169,11 +169,75 @@
     <!-- Skills -->
     <div class="mb-3">
       <label class="form-label">Required Skills</label>
-      {{ form.skills }}
+      <input type="text" class="form-control mb-2" id="skillsSearchEdit" placeholder="Search skills..." list="skillsMasterList">
+      <datalist id="skillsMasterList">
+        {% for s in all_skills %}
+          <option value="{{ s }}"></option>
+        {% endfor %}
+      </datalist>
+      <div class="d-none" id="skillsSelectWrapperEdit">{{ form.skills }}</div>
       {{ form.skills.errors }}
+      <div id="skillsPickerEdit" class="border rounded p-2" style="max-height: 260px; overflow:auto;"></div>
+      <div id="skillsSelectedEdit" class="mt-2"></div>
     </div>
     <button class="btn btn-dark" type="submit">Save Changes</button>
     <a href="{% url 'jobs.list' %}" class="btn btn-outline-secondary">Cancel</a>
   </form>
+
+<script>
+// Build a searchable skills picker for edit page
+(function() {
+  const wrapper = document.getElementById('skillsSelectWrapperEdit');
+  const select = wrapper ? wrapper.querySelector('select') : null;
+  const list = document.getElementById('skillsPickerEdit');
+  const search = document.getElementById('skillsSearchEdit');
+  const chips = document.getElementById('skillsSelectedEdit');
+  if (!select || !list) return;
+
+  function render() {
+    list.innerHTML = '';
+    const term = (search.value || '').toLowerCase().trim();
+    Array.from(select.options).forEach(opt => {
+      const label = opt.text || '';
+      if (term && !label.toLowerCase().includes(term)) return;
+      const id = 'skill_edit_' + opt.value;
+      const item = document.createElement('div');
+      item.className = 'form-check mb-1';
+      item.innerHTML = `
+        <input class=\"form-check-input\" type=\"checkbox\" id=\"${id}\" value=\"${opt.value}\" ${opt.selected ? 'checked' : ''}>
+        <label class=\"form-check-label\" for=\"${id}\">${label}</label>
+      `;
+      item.querySelector('input').addEventListener('change', (e) => {
+        opt.selected = e.target.checked;
+        renderChips();
+      });
+      list.appendChild(item);
+    });
+  }
+
+  function renderChips() {
+    chips.innerHTML = '';
+    Array.from(select.selectedOptions).forEach(opt => {
+      const b = document.createElement('span');
+      b.className = 'badge text-bg-light me-1 mb-1';
+      b.style.cursor = 'pointer';
+      b.textContent = opt.text;
+      b.title = 'Click to remove';
+      b.addEventListener('click', () => {
+        opt.selected = false;
+        const cb = document.getElementById('skill_edit_' + opt.value);
+        if (cb) cb.checked = false;
+        renderChips();
+      });
+      chips.appendChild(b);
+    });
+  }
+
+  search.addEventListener('input', render);
+  render();
+  renderChips();
+})();
+</script>
+
 </div>
 {% endblock %}

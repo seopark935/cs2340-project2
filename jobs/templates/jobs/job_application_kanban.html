@@ -3,44 +3,58 @@
 {% block title %}{{ job.title }} Applications{% endblock %}
 
 {% block content %}
-<h1 style="font-size:1.5rem;">{{ job.title }} Applications</h1>
+<div class="container py-3">
+  <div class="d-flex align-items-center justify-content-between mb-3">
+    <h1 class="h4 mb-0">Applications • {{ job.title }}</h1>
+    <a href="{% url 'jobs.dashboard' %}" class="btn btn-outline-secondary btn-sm">Back</a>
+  </div>
 
-<div style="display:flex; gap:1rem; align-items:flex-start;">
+  <div class="row row-cols-1 row-cols-md-{{ status_choices|length }} g-3">
     {% for status, apps in kanban_columns.items %}
-    <div style="flex:1; border:1px solid #ccc; padding:1rem; border-radius:8px; background:#f0f0f0;">
-        <h2 style="font-size:1.2rem; margin-bottom:0.5rem;">
-            {% for value, label in status_choices %}
+      <div class="col">
+        <div class="card h-100 shadow-sm">
+          <div class="card-header d-flex justify-content-between align-items-center py-2">
+            <span>
+              {% for value, label in status_choices %}
                 {% if value == status %}
-                    {{ label }}
+                  {{ label }}
                 {% endif %}
-            {% endfor %}
-        </h2>
-        
-
-        {% if apps %}
-            {% for app in apps %}
-            <div style="border:1px solid #999; padding:0.5rem; margin-bottom:0.5rem; border-radius:4px; background:#fff; font-size:0.9rem;">
-                <strong>{{ app.user.username }}</strong><br>
-                {{ app.message|truncatewords:10 }}
-
-                <!-- Form to update status -->
-                <form method="POST" action="{% url 'update_status' application_id=app.id %}" style="margin-top:0.3rem;">
-                    {% csrf_token %}
-                    <select name="status">
+              {% endfor %}
+            </span>
+            <span class="badge text-bg-secondary">{{ apps|length }}</span>
+          </div>
+          <div class="card-body p-2">
+            {% if apps %}
+              {% for app in apps %}
+                <div class="card mb-2 border-0 border-start border-3 border-primary-subtle">
+                  <div class="card-body p-2">
+                    <div class="d-flex justify-content-between align-items-start">
+                      <div>
+                        <div class="fw-semibold">{{ app.user.username }}</div>
+                        <div class="text-muted small">{{ app.user.email }}</div>
+                      </div>
+                      <span class="badge text-bg-light">#{{ app.id }}</span>
+                    </div>
+                    <div class="mt-2 small">{{ app.message|default:"(no message)"|truncatewords:16 }}</div>
+                    <form class="mt-2 d-flex gap-2 align-items-center" method="POST" action="{% url 'update_status' application_id=app.id %}">
+                      {% csrf_token %}
+                      <select name="status" class="form-select form-select-sm" style="max-width: 60%">
                         {% for value, label in status_choices %}
-                            <option value="{{ value }}" {% if value == app.status %}selected{% endif %}>{{ label }}</option>
+                          <option value="{{ value }}" {% if value == app.status %}selected{% endif %}>{{ label }}</option>
                         {% endfor %}
-                    </select>
-                    <button type="submit" style="margin-left:0.3rem;">Update</button>
-                </form>
-                
-                
-            </div>
-            {% endfor %}
-        {% else %}
-            <p style="font-size:0.9rem; color:#555;">No applications</p>
-        {% endif %}
-    </div>
+                      </select>
+                      <button type="submit" class="btn btn-primary btn-sm">Update</button>
+                    </form>
+                  </div>
+                </div>
+              {% endfor %}
+            {% else %}
+              <div class="text-center text-muted small py-3">No applications</div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
     {% endfor %}
+  </div>
 </div>
 {% endblock %}

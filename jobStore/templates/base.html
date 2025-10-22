@@ -10,7 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" 
           rel="stylesheet">
     
-    <link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}?v={{ STATIC_REV_CSS }}">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
   </head>
   <body class="d-flex flex-column min-vh-100{% if request.resolver_match and request.resolver_match.url_name == 'home.index' %} is-home{% endif %}">
@@ -96,7 +96,7 @@
             {% if messages %}
             <div class="position-fixed top-0 end-0 p-3" style="z-index: 1050;">
               {% for message in messages %}
-                <div class="toast align-items-center text-white bg-success border-0 show" role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="toast align-items-center text-white bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
                   <div class="d-flex">
                     <div class="toast-body">
                       {{ message }}
@@ -106,6 +106,18 @@
                 </div>
               {% endfor %}
             </div>
+            <script>
+              // Auto-show and auto-hide Bootstrap toasts (fade away after delay)
+              (function(){
+                const toasts = document.querySelectorAll('.toast');
+                toasts.forEach(el => {
+                  try {
+                    const t = new bootstrap.Toast(el, { autohide: true, delay: 4000 });
+                    t.show();
+                  } catch(e) {}
+                });
+              })();
+            </script>
           {% endif %}
   </body>
 </html>

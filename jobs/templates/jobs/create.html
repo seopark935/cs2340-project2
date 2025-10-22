@@ -184,7 +184,12 @@
       <div class="row align-items-start mb-3">
         <div class="col-sm-4 col-lg-3 text-muted"><label class="col-form-label">Required Skills</label></div>
         <div class="col-sm-8 col-lg-9">
-          <input type="text" class="form-control mb-2" id="skillsSearch" placeholder="Search skills...">
+          <input type="text" class="form-control mb-2" id="skillsSearch" placeholder="Search skills..." list="skillsMasterList">
+          <datalist id="skillsMasterList">
+            {% for s in all_skills %}
+              <option value="{{ s }}"></option>
+            {% endfor %}
+          </datalist>
           <div class="d-none" id="skillsSelectWrapper">{{ form.skills }}</div>
           {{ form.skills.errors }}
           <div id="skillsPicker" class="border rounded p-2" style="max-height: 260px; overflow:auto;"></div>

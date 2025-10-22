@@ -20,9 +20,14 @@
                     value="{{ request.GET.location }}">
             </div>
             <div class="col-md-3">
-              <input type="text" class="form-control" name="skill"
+              <input type="text" class="form-control" name="skill" list="skillsList"
                     placeholder="Search by skill"
                     value="{{ request.GET.skill }}">
+              <datalist id="skillsList">
+                {% for s in template_data.all_skills %}
+                  <option value="{{ s }}"></option>
+                {% endfor %}
+              </datalist>
             </div>
             <div class="col-md-3">
               <input type="text" class="form-control" name="experience"

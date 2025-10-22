@@ -64,6 +64,7 @@ def index(request):
         "title": "Job Seekers",
         "jobSeekers": jobSeekers,
         "candidateSearches": candidateSearches,
+        "all_skills": list(Skill.objects.all().order_by('name').values_list('name', flat=True)),
     }
     return render(request, "jobSeekers/index.html", {"template_data": template_data})
 

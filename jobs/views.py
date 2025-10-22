@@ -3,7 +3,6 @@ from django.contrib.auth.decorators import login_required
 from accounts.decorators import recruiter_required, jobseeker_required
 from django.contrib import messages
 from .models import Job, Application
-from .models import Job
 from .forms import JobForm
 from .services.recommendations import recommend_candidates_for_job
 from .filters import JobFilter
@@ -23,62 +22,11 @@ def job_list(request):
     applied_jobs = json.dumps(list(applied_jobs_preprocess))
 
 
-    location = request.GET.get("location")
-    lat, lon = None, None
-
-    if location:
-        response = requests.get(
-            "https://nominatim.openstreetmap.org/search",
-            params={"format": "json", "q": location},
-            headers={"User-Agent": "job-finder/1.0"}
-        )
-        data = response.json()
-        if data:
-            lat = float(data[0]["lat"])
-            lon = float(data[0]["lon"])
-    
-    jobs_with_coords = []
-    for job in f.qs:
-        if job.address:
-            try:
-                response = requests.get(
-                    "https://nominatim.openstreetmap.org/search",
-                    params={"format": "json", "q": job.address},
-                    headers={"User-Agent": "job-finder/1.0"}
-                )
-                data = response.json()
-                if data:
-                    job.lat = float(data[0]["lat"])
-                    job.lng = float(data[0]["lon"])
-                    jobs_with_coords.append(job)
-            except Exception:
-                continue
-
-    jobs_json = json.dumps([
-        {"title": job.title,
-        "location": job.location,
-        "remote_type": job.get_remote_type_display(),
-        "visa": job.visa_sponsorship,
-        "salary_min": job.salary_min,
-        "salary_max": job.salary_max,
-        "skills": [s.name for s in job.skills.all()],
-        "description": job.description,
-        "id": job.id,
-        "lat": job.lat,
-        "lng": job.lng,
-        }
-
-        for job in jobs_with_coords 
-            if job.lat is not None and job.lng is not None
-    ])
-    print("Jobs with coords:", jobs_with_coords)
-    print("Jobs JSON:", jobs_json)
+    # Map and geocoding moved to dedicated map app for speed.
     return render(request, "jobs/list.html", {
         "filter": f,
         "jobs": f.qs,
-        "lat": lat,             
-        "lon": lon,
-        "jobs_json": jobs_json,
+        # map data intentionally omitted to keep page fast
         "selected_remote_types": selected_remote_types,
         "applied_jobs": applied_jobs,
         "applied_jobs_status": applied_jobs_status,
@@ -110,7 +58,9 @@ def job_create(request):
             return redirect("jobs.dashboard")
     else:
         form = JobForm()
-    return render(request, "jobs/create.html", {"form": form})
+    from jobSeekers.models import Skill
+    all_skills = list(Skill.objects.all().order_by('name').values_list('name', flat=True))
+    return render(request, "jobs/create.html", {"form": form, "all_skills": all_skills})
 
 # Edit job (only if recruiter owns it)
 @login_required
@@ -124,8 +74,9 @@ def job_edit(request, pk):
             return redirect("jobs.dashboard")
     else:
         form = JobForm(instance=job)
-
-    return render(request, "jobs/edit.html", {"form": form, "job": job})
+    from jobSeekers.models import Skill
+    all_skills = list(Skill.objects.all().order_by('name').values_list('name', flat=True))
+    return render(request, "jobs/edit.html", {"form": form, "job": job, "all_skills": all_skills})
 
 #Apply Job 
 @login_required
