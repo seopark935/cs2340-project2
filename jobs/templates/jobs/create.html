@@ -42,11 +42,11 @@
         <div class="col-sm-4 col-lg-3 text-muted"><label class="col-form-label">Remote Type</label></div>
         <div class="col-sm-8 col-lg-9">{{ form.remote_type }}{{ form.remote_type.errors }}</div>
       </div>
-    <div class="mb-3">
-      <label class="form-label">Address</label>
-      {{ form.address }}
-      {{ form.address.errors }}
-    </div>
+      <!-- Address -->
+      <div class="row align-items-center mb-3">
+        <div class="col-sm-4 col-lg-3 text-muted"><label class="col-form-label" for="id_address">Address</label></div>
+        <div class="col-sm-8 col-lg-9">{{ form.address }}{{ form.address.errors }}</div>
+      </div>
 
      <!-- Hidden fields for latitude and longitude -->
      <input type="hidden" id="lat" name="lat">
@@ -146,12 +146,6 @@
 
     
     </script>
-    <!-- Remote type -->
-    <div class="mb-3">
-      <label class="form-label">Remote Type</label>
-      {{ form.remote_type }}
-      {{ form.remote_type.errors }}
-    </div>
 
       <!-- Min Experience -->
       <div class="row align-items-center mb-3">
@@ -215,8 +209,8 @@
   // Ensure Bootstrap styles on default widgets
   (function() {
     const formEl = document.currentScript.closest('div.container').querySelector('form');
-    formEl.querySelectorAll('input[type="text"], input[type="number"], textarea').forEach(el => el.classList.add('form-control'));
-    formEl.querySelectorAll('select').forEach(el => el.classList.add('form-select'));
+    formEl.querySelectorAll('input[type="text"], input[type="number"], textarea').forEach(el => { el.classList.add('form-control'); el.classList.add('w-100'); });
+    formEl.querySelectorAll('select').forEach(el => { el.classList.add('form-select'); el.classList.add('w-100'); });
   })();
 
   // Build a searchable, accessible skills picker that syncs with the hidden select

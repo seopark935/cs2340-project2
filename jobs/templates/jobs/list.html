@@ -8,15 +8,15 @@
     <a href="{% url 'map.index' %}" class="btn btn-outline-primary btn-sm">Open Map</a>
   </div>
 
-  <form method="get" id="filterForm" class="d-flex flex-nowrap align-items-end gap-3 mb-4">
+  <form method="get" id="filterForm" class="d-flex flex-nowrap align-items-start gap-2 mb-3">
     <!-- Title -->
-    <div class="flex-shrink-0" style="min-width:180px">
+    <div class="flex-shrink-0" style="min-width:140px">
       <label class="form-label">Title</label>
       <input class="form-control" type="text" name="title" value="{{ request.GET.title|default_if_none:'' }}">
     </div>
 
     <!-- Location -->
-    <div class="flex-shrink-0" style="min-width:180px">
+    <div class="flex-shrink-0" style="min-width:140px">
       <label class="form-label">Location</label>
       <input class="form-control" type="text" id="id_location" name="location" value="{{ request.GET.location|default_if_none:'' }}">
     </div>
@@ -24,7 +24,7 @@
     
 
     <!-- Remote type -->
-    <div class="flex-shrink-0" style="min-width:140px">
+    <div class="flex-shrink-0" style="min-width:120px">
       <label class="form-label">Remote type</label>
       <select class="form-select" name="remote_type">
         {% for val,label in filter.form.remote_type.field.choices %}
@@ -34,7 +34,7 @@
     </div>
     
     <!-- Visa sponsorship -->
-    <div class="flex-shrink-0" style="min-width:140px">
+    <div class="flex-shrink-0" style="min-width:120px">
       <label class="form-label">Visa sponsorship</label>
       <select class="form-select" name="visa_sponsorship">
         <option value="">Any</option>
@@ -44,17 +44,20 @@
     </div>
 
     <!-- Minimum salary slider (0 - 500k+, 50k steps) -->
-    <div class="flex-shrink-0" style="min-width:180px">
-      <label class="form-label">Minimum salary</label>
+    <div class="flex-shrink-0" style="min-width:140px">
+      <label class="form-label" for="salaryMinRangeSearch">Minimum salary</label>
       <input type="hidden" name="salary_min" id="salaryMinHidden" value="{{ request.GET.salary_min|default_if_none:'' }}">
-      <input id="salaryMinRangeSearch" type="range" class="form-range" min="0" max="500000" step="50000" style="width:150px">
-      <div class="small text-muted" id="salaryRangeDisplaySearch" style="max-width:150px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"></div>
+      <div class="d-flex align-items-center">
+        <input id="salaryMinRangeSearch" type="range" class="form-range me-2" min="0" max="500000" step="50000" style="width:100px">
+        <span class="small text-muted" id="salaryRangeDisplaySearch" style="display:inline-block; min-width:50px; text-align:right;"></span>
+      </div>
     </div>
 
     <!-- Submit -->
     <div class="flex-shrink-0">
-      <button class="btn btn-dark">Filter</button>
-      <a href="{% url 'jobs.list' %}" class="btn btn-outline-secondary">Clear</a>
+      <label class="form-label d-block">&nbsp;</label>
+      <button class="btn btn-dark btn-sm me-1">Filter</button>
+      <a href="{% url 'jobs.list' %}" class="btn btn-outline-secondary btn-sm">Clear</a>
     </div>
   </form>
 
@@ -69,7 +72,7 @@
       function parseNum(v, fb) { const n = parseInt(v, 10); return isNaN(n) ? fb : n; }
       function label(n) { return n >= DEFAULT_MAX ? '$500k+' : `$${(n/1000).toFixed(0)}k+`; }
       let minVal = parseNum(minH.value, DEFAULT_MIN); minR.value = minVal;
-      function update() { let a = parseNum(minR.value, DEFAULT_MIN); a = Math.round(a/STEP)*STEP; minR.value = a; minH.value = (a===DEFAULT_MIN)?'':a; disp.textContent = `Min salary: ${label(a)}`; }
+      function update() { let a = parseNum(minR.value, DEFAULT_MIN); a = Math.round(a/STEP)*STEP; minR.value = a; minH.value = (a===DEFAULT_MIN)?'':a; disp.textContent = label(a); }
       minR.addEventListener('input', update); update();
     })();
   </script>
