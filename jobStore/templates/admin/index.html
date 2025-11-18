@@ -1,0 +1,25 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+{# Let the base template render the single "Site administration" heading #}
+{% block content_title %}{% blocktrans %}Site administration{% endblocktrans %}{% endblock %}
+
+{% block content %}
+<div id="content-main">
+  <p class="mb-3">
+    <a class="button" href="{% url 'jobs.export_applications' %}">
+      {% trans "Export applications CSV" %}
+    </a>
+    <a class="button" href="{% url 'accounts.export_recruiters' %}" style="margin-left: 0.5rem;">
+      {% trans "Export recruiter profiles CSV" %}
+    </a>
+    <a class="button" href="{% url 'jobSeekers.export_jobseekers' %}" style="margin-left: 0.5rem;">
+      {% trans "Export job seeker profiles CSV" %}
+    </a>
+  </p>
+
+  <p class="help">
+    {% trans "Use the navigation on the left to manage data in each section." %}
+  </p>
+</div>
+{% endblock %}

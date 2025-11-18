@@ -1,6 +1,7 @@
 from django import forms
 from .models import JobSeeker, Skill
 
+
 class JobSeekerForm(forms.ModelForm):
     class Meta:
         model = JobSeeker
@@ -21,21 +22,26 @@ class JobSeekerForm(forms.ModelForm):
             "hide_location",
             "hide_profile",
             "hide_image",
-            "hide_headline"
+            "hide_headline",
         ]
         widgets = {
             "headline": forms.Textarea(attrs={"rows": 3}),
-            'open_to_work': forms.CheckboxInput(),
-            'hide_location': forms.CheckboxInput(),
-            'hide_image': forms.CheckboxInput(),
-            'hide_headline': forms.CheckboxInput(),
-            'hide_profile': forms.CheckboxInput()
+            "open_to_work": forms.CheckboxInput(),
+            "hide_location": forms.CheckboxInput(),
+            "hide_image": forms.CheckboxInput(),
+            "hide_headline": forms.CheckboxInput(),
+            "hide_profile": forms.CheckboxInput(),
         }
 
         labels = {
-            'hide_image': "Keep your image private",
-            'hide_headline': "Keep your headline private",
-            'hide_profile': "Keep profile hidden",
-            'hide_location': "Hide your location",
+            "hide_image": "Keep your image private",
+            "hide_headline": "Keep your headline private",
+            "hide_profile": "Keep profile hidden",
+            "hide_location": "Hide your location",
         }
+
+
+class RecruiterEmailForm(forms.Form):
+    subject = forms.CharField(max_length=255)
+    message = forms.CharField(widget=forms.Textarea(attrs={"rows": 6}))
 

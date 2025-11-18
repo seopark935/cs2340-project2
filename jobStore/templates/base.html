@@ -45,7 +45,7 @@
                 <a class="nav-link" href="{% url 'jobSeekers.index' %}">Job Seekers</a>
                 <a class="nav-link" href="{% url 'jobs.dashboard' %}">My Jobs</a>
               {% endif %}
-            
+
               <!-- Job Seeker-only links -->
               {% if user.is_staff or user.is_jobseeker %}
               <a class="nav-link" href="{% url 'jobSeekers.my_profile' %}">My Profile</a>

@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="p-3">
+  <div class="container">
+    <div class="col-md-6 mx-auto mb-3">
+      <h2>Email {{ template_data.jobSeeker.full_name }}</h2>
+      <p class="text-muted">
+        Your message will be sent to {{ template_data.jobSeeker.user.email }}.
+      </p>
+
+      <form method="post">
+        {% csrf_token %}
+
+        <div class="mb-3">
+          <label for="{{ template_data.form.subject.id_for_label }}" class="form-label">Subject</label>
+          {{ template_data.form.subject }}
+        </div>
+
+        <div class="mb-3">
+          <label for="{{ template_data.form.message.id_for_label }}" class="form-label">Message</label>
+          {{ template_data.form.message }}
+        </div>
+
+        <button type="submit" class="btn btn-primary">Send Email</button>
+        <a href="{% url 'jobSeekers.show' template_data.jobSeeker.id %}" class="btn btn-secondary ms-2">
+          Cancel
+        </a>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+

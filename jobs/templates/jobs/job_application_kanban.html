@@ -28,13 +28,15 @@
               {% for app in apps %}
                 <div class="card mb-2 border-0 border-start border-3 border-primary-subtle">
                   <div class="card-body p-2">
-                    <div class="d-flex justify-content-between align-items-start">
-                      <div>
-                        <div class="fw-semibold">{{ app.user.username }}</div>
-                        <div class="text-muted small">{{ app.user.email }}</div>
+                    <a href="{% url 'jobSeekers.show' app.user.jobseeker_profile.id %}" class="text-decoration-none text-reset">
+                      <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                          <div class="fw-semibold">{{ app.user.username }}</div>
+                          <div class="text-muted small">{{ app.user.email }}</div>
+                        </div>
+                        <span class="badge text-bg-light">#{{ app.id }}</span>
                       </div>
-                      <span class="badge text-bg-light">#{{ app.id }}</span>
-                    </div>
+                    </a>
                     <div class="mt-2 small">{{ app.message|default:"(no message)"|truncatewords:16 }}</div>
                     <form class="mt-2 d-flex gap-2 align-items-center" method="POST" action="{% url 'update_status' application_id=app.id %}">
                       {% csrf_token %}

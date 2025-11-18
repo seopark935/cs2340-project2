@@ -1,13 +1,16 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from accounts.decorators import recruiter_required, jobseeker_required
+from django.http import HttpResponse
+from accounts.decorators import recruiter_required, jobseeker_required, admin_required
 from django.contrib import messages
+from django.utils import timezone
 from .models import Job, Application
 from .forms import JobForm
 from .services.recommendations import recommend_candidates_for_job
 from .filters import JobFilter
 import requests
-import json 
+import json
+import csv
 
 # List jobs (everyone can see)
 def job_list(request):
@@ -250,3 +253,66 @@ def job_recommendations_debug(request, pk):
     data.sort(key=lambda x: (x['included'], x['score']), reverse=True)
 
     return render(request, "jobs/recommendations_debug.html", {"job": job, "rows": data})
+
+
+@login_required
+@admin_required
+def export_applications_csv(request):
+    """Export job applications as CSV for reporting/usage analysis."""
+    response = HttpResponse(content_type="text/csv")
+    timestamp = timezone.now().strftime("%Y%m%d_%H%M%S")
+    response["Content-Disposition"] = f'attachment; filename="applications_{timestamp}.csv"'
+
+    writer = csv.writer(response)
+    writer.writerow(
+        [
+            "Application ID",
+            "Applied At",
+            "Status",
+            "Job ID",
+            "Job Title",
+            "Job Location",
+            "Recruiter Username",
+            "Recruiter Email",
+            "Candidate Username",
+            "Candidate Full Name",
+            "Candidate Email",
+        ]
+    )
+
+    applications = (
+        Application.objects.select_related("job", "user", "job__created_by")
+        .order_by("-applied_at")
+    )
+
+    for app in applications:
+        job = app.job
+        recruiter = getattr(job, "created_by", None)
+        candidate = app.user
+
+        recruiter_username = getattr(recruiter, "username", "") if recruiter else ""
+        recruiter_email = getattr(recruiter, "email", "") if recruiter else ""
+
+        candidate_full_name = ""
+        try:
+            candidate_full_name = candidate.get_full_name() or ""
+        except Exception:
+            candidate_full_name = ""
+
+        writer.writerow(
+            [
+                app.id,
+                timezone.localtime(app.applied_at).isoformat() if app.applied_at else "",
+                app.get_status_display(),
+                job.id if job else "",
+                getattr(job, "title", ""),
+                getattr(job, "location", ""),
+                recruiter_username,
+                recruiter_email,
+                getattr(candidate, "username", ""),
+                candidate_full_name,
+                getattr(candidate, "email", ""),
+            ]
+        )
+
+    return response

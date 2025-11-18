@@ -6,10 +6,13 @@ from django.contrib.auth import login
 from django.urls import reverse
 from django.contrib.auth.views import LoginView
 from django.contrib.auth import logout
+from django.http import HttpResponse
+from django.utils import timezone
+import csv
 
 from .forms import JobSeekerSignUpForm, RecruiterSignUpForm, RecommendationPriorityForm
 from .models import User, RecruiterProfile
-from .decorators import recruiter_required
+from .decorators import recruiter_required, admin_required
 
 
 # ---------- Helpers ----------
@@ -86,3 +89,47 @@ def recommendation_settings(request):
         form = RecommendationPriorityForm(instance=profile)
 
     return render(request, "accounts/recommendation_settings.html", {"form": form})
+
+
+# ---------- Admin CSV Exports ----------
+@login_required
+@admin_required
+def export_recruiters_csv(request):
+    """Export recruiter profiles as CSV for reporting."""
+    response = HttpResponse(content_type="text/csv")
+    timestamp = timezone.now().strftime("%Y%m%d_%H%M%S")
+    response["Content-Disposition"] = f'attachment; filename="recruiters_{timestamp}.csv"'
+
+    writer = csv.writer(response)
+    writer.writerow(
+        [
+            "User ID",
+            "Username",
+            "Email",
+            "First Name",
+            "Last Name",
+            "Company Name",
+            "Website",
+            "Location",
+            "About",
+        ]
+    )
+
+    profiles = RecruiterProfile.objects.select_related("user").order_by("user__id")
+    for profile in profiles:
+        user = profile.user
+        writer.writerow(
+            [
+                user.id,
+                user.username,
+                user.email,
+                user.first_name,
+                user.last_name,
+                profile.company_name,
+                profile.website,
+                profile.location,
+                profile.about,
+            ]
+        )
+
+    return response
