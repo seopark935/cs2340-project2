@@ -1,6 +1,6 @@
 # jobs/admin.py
 from django.contrib import admin
-from .models import Job
+from .models import Job, Application
 
 @admin.register(Job)
 class JobAdmin(admin.ModelAdmin):
@@ -9,3 +9,7 @@ class JobAdmin(admin.ModelAdmin):
     search_fields = ("title", "description", "location")
     autocomplete_fields = ("created_by",)
     filter_horizontal = ("skills",)
+
+@admin.register(Application)
+class ApplicationAdmin(admin.ModelAdmin):
+    search_fields = ["name"]
