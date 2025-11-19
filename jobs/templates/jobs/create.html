@@ -74,6 +74,31 @@
 
         var marker;
 
+        const locationCounts = {{ location_counts|safe }};
+
+        for (const location in locationCounts) {
+            const count = locationCounts[location];
+
+            // ⬅️ Geocode the location once to get its coordinates
+            fetch(
+                "https://nominatim.openstreetmap.org/search?format=json&q=" 
+                + encodeURIComponent(location)
+            )
+            .then(res => res.json())
+            .then(data => {
+                if (!data || !data.length) return;
+
+                const lat = parseFloat(data[0].lat);
+                const lng = parseFloat(data[0].lon);
+
+                // 🔵 marker showing applicant count
+                L.marker([lat, lng])
+                    .addTo(map)
+                    .bindPopup(`<strong>${location}</strong><br>${count} applicant(s)`);
+
+            });
+        }
+
     
 
       addressInput.addEventListener('change', function() {

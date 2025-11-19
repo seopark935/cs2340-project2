@@ -63,7 +63,31 @@ def job_create(request):
         form = JobForm()
     from jobSeekers.models import Skill
     all_skills = list(Skill.objects.all().order_by('name').values_list('name', flat=True))
-    return render(request, "jobs/create.html", {"form": form, "all_skills": all_skills})
+
+    # === NEW: Calculate the number of applicants per location ===
+    from jobs.models import Application
+
+    location_counts = {}
+    applications = Application.objects.select_related('user', 'job').filter(
+        job__created_by=request.user
+    )
+
+    for app in applications:
+        # Check if the user has a jobseeker_profile, and if not, set the location to 'Unknown Location'
+        if hasattr(app.user, 'jobseeker_profile') and app.user.jobseeker_profile:
+            location = app.user.jobseeker_profile.location
+            print(app.job.title)
+            print(app.user, location)
+        else:
+            location = 'Unknown Location'
+
+        if location:
+            if location in location_counts:
+                location_counts[location] += 1
+            else:
+                location_counts[location] = 1
+
+    return render(request, "jobs/create.html", {"form": form, "all_skills": all_skills, "location_counts": location_counts})
 
 # Edit job (only if recruiter owns it)
 @login_required
