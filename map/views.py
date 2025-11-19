@@ -1,4 +1,5 @@
 from django.shortcuts import render
+from collections import Counter
 from jobs.models import Job, Application
 import requests
 import json
@@ -88,6 +89,15 @@ def index(request):
             Application.objects.filter(user=request.user)
             .values_list('job_id', flat=True)
         )
+    
+    applications = Application.objects.select_related('user', 'job')
+    location_counts = Counter()
+
+    for app in applications:
+        # Assuming the location is stored in jobseeker_profile or somewhere on the user
+        location = app.user.jobseeker_profile.location  # Adjust if necessary
+        if location:
+            location_counts[location] += 1
 
     return render(request, "map/index.html", {
         "jobs_json": jobs_json,
@@ -98,4 +108,5 @@ def index(request):
         "user_lng": user_lng,
         "user_is_authenticated": request.user.is_authenticated,
         "user_is_jobseeker": getattr(request.user, 'is_jobseeker', False),
+        "location_counts": location_counts,
     })
