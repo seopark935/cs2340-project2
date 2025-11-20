@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div class = "container mt-5">
+    <div class = "row justify-content-center">
+        <div class = "col-md-8">
+            <h2 class="mb-4 fw-bold">Messages</h2>
+
+            <div class = "list-group shadow-sm">
+                {% for user in conversations %}
+                <a href = "{% url 'conversation' user.username %}" class = "list-group-item list-group-item-action p-3 d-flex align-items-center">
+                    <div class = "bg-light rounded-circle d-flex justify-content-center align-items-center me-3" style = "width: 50px; height: 50px;">
+                        <i class = "fa-solid fa-user text-secondary"></i>
+                    </div>
+
+                    <div class = "flex-grow-1">
+                        <h5 class = "mb-0"> {{ user.username }}</h5>
+                        <small class = "text-muted">Click to view conversation</small>
+                    </div>
+
+                    <div>
+                        <i class = "fa-solid fa-chevron-right text-muted"></i>
+                    </div>
+                </a>
+                {% empty %}
+                <div class = "text-center pg-5 bg-white rounded shadow-sm">
+                    <i class = "fa-solid fa-inbox fa-3x text-muted mb-3"></i>
+                    <h4>Your inbox is empty</h4>
+                    <p class = "text-muted">Connect with candidates or recruiters to start chatting.</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+
+<!-- <h2>My Inbox</h2>
+{% for user in conversations %}
+    <div class = "chat-link">
+        <a href = "{%url 'conversation' user.username %}">Chat with {{ user.username }}</a>
+    </div>
+{% empty %}
+    <p>No messages yet. </p>
+{% endfor %} -->

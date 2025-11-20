@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'jobs',
     'django_filters',
     'map',
+    'messaging',
     # 'cart',
 ]
 

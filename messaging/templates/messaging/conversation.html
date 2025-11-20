@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<style>
+    .chat-history {
+        height: 500px;
+        overflow-y: auto;
+        background-color:#f8f9fa;
+    }
+
+    .message-bubble {
+        max-width: 70%;
+        padding: 10px 15px;
+        border-radius: 20px;
+        margin-bottom: 10px;
+        position: relative;
+    }
+
+    .message-sent {
+        background-color:#0d6efd;
+        color:white;
+        align-self:flex-end;
+        border-bottom-right-radius: 2px;
+    }
+
+    .message-received {
+        background-color: #e9ecef;
+        color: #212529;
+        align-self: flex-start;
+        border-bottom-left-radius: 2px;
+    }
+
+    .chat-input-area label {
+        display:none;
+    }
+</style>
+
+<div class="container mt-5 mb-5">
+    <div class="row justify-content-center">
+        <div class ="col-md-8">
+            <div class = "card shadow border-0">
+                <div class="card-header bg-white border-bottom py-3">
+                    <div class="d-flex align-items-center">
+                        <a href ="{% url 'inbox' %}" class="text-decoration-none text-muted me-3">
+                            <i class = "fa-solid fa-arrow-left"></i> Back
+                        </a>
+                        <h5 class = "mb-0 fw-bold">Chat with {{ other_user.username }}</h5>
+                    </div>
+                </div>
+
+                <div class = "card-body chat-history d-flex flex-column p-4" id="chat-box">
+                    {% for message in messages %}
+                    <div class = "message-bubble {% if message.sender == request.user %} message-sent {% else %} message-received{% endif %}">
+                        <p class="mb-1">{{ message.body }}</p>
+                        <small class = "d-block text-end opacity-75" style="font-size: 0.7rem;">
+                            {{ message.created_at|date:"M d, g:i a" }}
+                        </small>
+                    </div>
+                    {% empty %}
+                    <div class = "text-center text-muted mt-5">
+                        <i class = "fa-regular fa-comments fa-3x mb-3"></i>
+                        <p>No messages yet. Start the conversation!</p>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <div class="card-footer bg-white py-3 chat-input-area">
+                    <form method="post" class="d-flex gap-2">
+                        {% csrf_token %}
+                        <div class = "flex-grow-1">
+                            {{ form.body }}
+                        </div>
+                        <button type="submit" class = "btn btn-primary px-4">
+                            <i class = "fa-solid fa-paper-plane"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    var chatBox = document.getElementById("chat-box");
+    chatBox.scrollTop = chatBox.scrollHeight;
+</script>
+
+{% endblock %}
+
+
+<!-- <h2>Chat with {{other_user.username}}</h2>
+
+<div class = "messages-area">
+    {% for msg in messages %}
+    <div class = "message">
+        <strong>{{ msg.sender.username }}:</strong> {{ msg.body }}
+        <br><small>{{ msg.created_at }}</small>
+    </div>
+    <hr>
+    {% endfor %}
+</div>
+
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Send Message</button>
+</form> -->
