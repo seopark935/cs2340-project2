@@ -42,8 +42,8 @@ def index(request):
         radius = request.user.jobseeker_profile.preferred_radius_miles
 
         home = request.user.jobseeker_profile.location
-        if home:
-            user_lat, user_lng = geocode(home)
+        #if home:
+            #user_lat, user_lng = geocode(home)
     print("USER GEOCODE:", user_lat, user_lng, "RADIUS:", radius)
 
 
@@ -94,8 +94,8 @@ def index(request):
         "applied_ids": json.dumps(applied_ids),
         "user_radius": radius,
         "radius_enabled": radius_enabled,
-        "user_lat": user_lat,
-        "user_lng": user_lng,
+        "user_lat": "null",
+        "user_lng": "null",
         "user_is_authenticated": request.user.is_authenticated,
         "user_is_jobseeker": getattr(request.user, 'is_jobseeker', False),
     })
