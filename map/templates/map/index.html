@@ -7,6 +7,11 @@
     <a href="{% url 'jobs.list' %}" class="btn btn-outline-secondary btn-sm">Back to Jobs</a>
   </div>
 
+  <div class="mb-3">
+    <label for="radiusSlider" class="form-label">Search Radius: <span id="radiusValue"></span> miles</label>
+    <input type="range" class="form-range" id="radiusSlider" min="5" max="100" step="5">
+  </div>
+
   <style>
     #map { height: 70vh; width: 100%; }
   </style>
@@ -26,8 +31,26 @@
       const appliedIds = {{ applied_ids|safe }};
       const isAuth = {{ user_is_authenticated|yesno:"true,false" }};
       const isJobSeeker = {{ user_is_jobseeker|yesno:"true,false" }};
+      const DEFAULT_LAT = 39.5;    
+      const DEFAULT_LNG = -98.35;
+      const DEFAULT_ZOOM = 4;
+      const USER_LOCATION_ZOOM = 12;
+      const userRadius = {{ user_radius|default:0 }};
+      const radiusToggle = document.getElementById("radiusToggle");
+      let userLat = null; 
+      let userLng = null;
+      let userLocationCircle = null;
 
-      const map = L.map('map');
+      //all radius stuff
+      const radiusSlider = document.getElementById("radiusSlider");
+      const radiusValueSpan = document.getElementById("radiusValue");
+
+      radiusSlider.value = userRadius;
+      radiusValueSpan.textContent = userRadius;
+
+      let currentRadius = userRadius;
+
+      const map = L.map('map').setView([DEFAULT_LAT, DEFAULT_LNG], DEFAULT_ZOOM);
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap contributors' }).addTo(map);
 
       const markers = [];
@@ -49,26 +72,12 @@
             <div class="mt-2 small">${(job.description||'').slice(0, 180)}${(job.description||'').length > 180 ? '…' : ''}</div>
             <div class="mt-2">${action}</div>
           </div>`;
-        const m = L.marker([job.lat, job.lng]).addTo(map).bindPopup(popup);
+          
+        const m = L.marker([job.lat, job.lng]).bindPopup(popup);
         markers.push(m);
-      }
-
-      if (markers.length > 0) {
-        const group = L.featureGroup(markers);
-        map.fitBounds(group.getBounds().pad(0.2));
-      } else {
-        map.setView([39.5, -98.35], 4); // USA fallback
       }
      
       // ===============================
-      const userRadius = {{ user_radius|default:0 }};
-      const radiusToggle = document.getElementById("radiusToggle");
-
-      // Get user's stored location from Django (you must pass it in context)
-      const userLat = {{ user_lat|default:"null" }} === null ? null : Number({{ user_lat|default:"0" }});
-      const userLng = {{ user_lng|default:"null" }} === null ? null : Number({{ user_lng|default:"0" }});
-
-
 
       // Compute distance helper
       function haversine(lat1, lon1, lat2, lon2) {
@@ -83,54 +92,117 @@
         return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
       }
 
-      // Filter markers
-      function updateRadiusFilter() {
-        const enabled = radiusToggle.checked;
+      function handleMapCenter(lat, lng, zoom, isLiveLocation = false) {
+          userLat = lat;
+          userLng = lng;
+          
+          map.setView([userLat, userLng], 10);
+          map.invalidateSize();
+          
+          if (isLiveLocation) {
+              L.marker([userLat, userLng]).addTo(map)
+                  .bindPopup("Your Current Location")
+                  .openPopup();
+          }
 
-        markers.forEach((marker, i) => {
+          updateRadiusFilter(currentRadius);
+      }
+
+      function reloadMapView() {
+        // Collect markers currently visible on the map
+        const visible = markers.filter(m => map.hasLayer(m));
+
+        if (visible.length > 0) {
+            const group = L.featureGroup(visible);
+            map.fitBounds(group.getBounds().pad(0.2));
+        } else if (userLat !== null) {
+            map.setView([userLat, userLng], USER_LOCATION_ZOOM);
+        } else {
+            // fallback view
+            map.setView([DEFAULT_LAT, DEFAULT_LNG], DEFAULT_ZOOM);
+        }
+      }
+
+     function updateRadiusFilter(newRadius = currentRadius) {
+        const enabled = isJobSeeker && radiusToggle && radiusToggle.checked;
+        
+        if (userLocationCircle) {
+            map.removeLayer(userLocationCircle);
+            userLocationCircle = null;
+        }
+
+        markers.forEach((marker, i) => {  
           const job = jobs[i];
 
-          if (!enabled || !userLat || !userLng) {
+          if (!enabled || userLat === null || userLng === null) {
             marker.addTo(map);
             return;
           }
-          if (!userLat || !userLng) {
-            marker.addTo(map);
-            return;
-      }
-      function reloadMapView() {
-          // Collect markers currently visible on the map
-          const visible = markers.filter(m => map.hasLayer(m));
-
-          if (visible.length > 0) {
-              const group = L.featureGroup(visible);
-              map.fitBounds(group.getBounds().pad(0.2));
-          } else {
-              // fallback view
-              map.setView([39.5, -98.35], 4);
-          }
-      }
-
 
           const dist = haversine(userLat, userLng, job.lat, job.lng);
 
-          if (dist <= userRadius) {
+          if (dist <= newRadius) {
             marker.addTo(map);
           } else {
             map.removeLayer(marker);
           }
-        });
+        }); 
+        
+        if (enabled && userLat !== null && userLng !== null && userRadius > 0) {
+             const radiusMeters = newRadius * 1609.34;
+             userLocationCircle = L.circle([userLat, userLng], {
+                color: 'blue',
+                fillColor: '#30f',
+                fillOpacity: 0.1,
+                radius: radiusMeters 
+            }).addTo(map);
+
+             map.fitBounds(userLocationCircle.getBounds(), {
+                padding: [50, 50]
+                
+          });
+        } else {
+            reloadMapView(); 
+        }
+  
+       
+        
+        if (!enabled || newRadius === 0) {
+            if (userLocationCircle) {
+                map.removeLayer(userLocationCircle);
+                userLocationCircle = null;
+            }
+        }
       }
 
-      // Initial filtering
-      updateRadiusFilter();
+    
+      if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(
+              (position) => {
+                  handleMapCenter(position.coords.latitude, position.coords.longitude, USER_LOCATION_ZOOM, true);
+              },
+              (error) => {
+                  // ERROR: Location denied/failed
+                  console.warn("Geolocation failed. Error:", error.message);
+                  handleMapCenter(DEFAULT_LAT, DEFAULT_LNG, DEFAULT_ZOOM, false);
+              },
+              { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
+          );
+      } else {
+          console.warn("Geolocation not supported. Using default view.");
+          handleMapCenter(DEFAULT_LAT, DEFAULT_LNG, DEFAULT_ZOOM, false);
+      }
 
       // Re-filter when checkbox changes
       radiusToggle.addEventListener("change", () => {
         updateRadiusFilter();
-        reloadMapView();
       });
 
+      radiusSlider.addEventListener("input", (e) => {
+          currentRadius = Number(e.target.value);
+          radiusValueSpan.textContent = currentRadius;
+          updateRadiusFilter(currentRadius); 
+      });
 
       // Delegate apply button clicks to open modal
       document.addEventListener('click', function(e) {
